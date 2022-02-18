@@ -14,14 +14,16 @@ These provide a modern software development and delivery environment.  These too
 
 After this lab you will be able to:
 
-- [ ] **Setup** a *development environment in IntelliJ.*
-- [ ] **Setup** a *GitHub repository.*
-- [ ] **Pull** a *Docker container.*
-- [ ] **Manage** a *Docker container using basic commands.*
-- [ ] **Define** a *Dockerfile to create your own container.*
-- [ ] **Deploy** to a *Docker container from IntelliJ.*
+- **Setup** a *development environment in IntelliJ.*
+- **Setup** a *GitHub repository.*
+- **Pull** a *Docker container.*
+- **Manage** a *Docker container using basic commands.*
+- **Define** a *Dockerfile to create your own container.*
+- **Deploy** to a *Docker container from IntelliJ.*
 
 ## IntelliJ Setup
+
+IntelliJ IDEA is the Integrated Development Environment that we will be using on the module. You can download IntelliJ IDEA from https://www.jetbrains.com/idea/ The community edition of IntelliJ IDEA is sufficient for this module but you can if you wish get access to the ultimate edition by signing up for a student licence at [https://www.jetbrains.com/shop/eform/students](https://www.jetbrains.com/shop/eform/students)
 
 You will require Java and IntelliJ installed on the machine you plan to work on.  Once ready, start-up IntelliJ.  You should be presented with the following screen:
 
@@ -33,7 +35,7 @@ We need to create a new project, so click on **Create New Project** to open the 
 
 *Replicate the same settings as shown in the image.*  You need to do the following:
 
-1. Select **10** as Project SDK.  If IntelliJ has not detected the JDK you will need to find it.  For Windows see [here](https://stackoverflow.com/questions/16765726/how-to-set-intellij-idea-project-sdk).  If you are on Linux I assume you know what you are doing.  If you are on Mac OS X then the Windows help should be enough plus knowing where applications are installed.
+1. Select **10** (or newer) as Project SDK.  If IntelliJ has not detected the JDK you will need to find it.  For Windows see [here](https://stackoverflow.com/questions/16765726/how-to-set-intellij-idea-project-sdk).  If you are on Linux I assume you know what you are doing.  If you are on Mac OS X then the Windows help should be enough plus knowing where applications are installed.
 2. Select **Maven** as the project type on the left.
 
 Once done click on **Next**.  This will open the following window:
@@ -42,15 +44,13 @@ Once done click on **Next**.  This will open the following window:
 
 Enter the following details:
 
+- **Name** seMethods
+- **Location** ~\IdeaProjects\seMethods
 - **GroupID** *com.napier.sem*
 - **ArtifactID** *seMethods*
 - **Version** 0.1.0.1
 
 The version stands for 0.1-alpha-1.  It means this is the first version.
-
-Click **Next** to take you to the final window:
-
-![IntelliJ New Project Location](img/intellij-project-location.png)
 
 Leave **Project name** as *seMethods*.  You can store the project wherever you choose although the default location is normally best.
 
@@ -148,7 +148,9 @@ The whole point of version control is to maintain your code somewhere backed-up 
 1. You do not need a paid for account.
 2. If you are a student, GitHub will give you [unlimited private repositories](https://education.github.com/pack).
 
-Once you have an account, you need to create a repository.  In GitHub, you will see a **+** near the top of the page, which you can select **New repository** from:
+New projects are started by default on a branch called *main* but IntelliJ uses *master* by default. To change GitHub's default branch name go to [https://github.com/settings/repositories](https://github.com/settings/repositories) and change the default to *master*
+
+Now we can create a new repository. In GitHub, you will see a **+** near the top of the page, which you can select **New repository** from:
 
 ![GitHub New Repository](img/github-new-repo.png)
 
@@ -160,9 +162,9 @@ Click on **Create repository** and you will be presented with the following:
 
 ![GitHub Repository Main Screen](img/github-repo-main.png)
 
-Now we need to tell IntelliJ the location of our repository.  This is the URL of the repository you created, which should be of the form `https:\\github.com\<user-name>\sem`.  For example, my repository is [https:\\github.com\kevin-chalmers\sem](https:\\github.com\kevin-chalmers\sem).
+Now we need to tell IntelliJ the location of our repository.  This is the URL of the repository you created, which should be of the form `https://github.com/<user-name>/sem`.  For example, my repository is [https://github.com/Kevin-Sim/sem](https://github.com/Kevin-Sim/sem)
 
-To add the location to IntelliJ, select **VCS** from the main menu, then **Git** and **Remotes** to open the following window:
+To add the location to IntelliJ, select the  **Git** menu then and **Manage Remotes** to open the following window:
 
 ![Add Remote to IntelliJ](img/intellij-add-remote.png)
 
@@ -172,19 +174,19 @@ Click on the **+** button to open the **Define Remote** window, where the name *
 
 IntelliJ will test if the URL is valid, and when successful click **OK** to go back to IntelliJ's main screen.
 
-We are now ready to pull the GitHub version of the repository to the local machine, which will add the license file from GitHub to our local machine.  To pull, select **VCS** from the main menu, then **Git** and **Pull**:
+To sync the remote repository select Fetch from the Git menu
+
+![Fetch](img/git_fetch.png)
+
+We are now ready to pull the GitHub version of the repository to the local machine, which will add the license file from GitHub to our local machine.  To pull, select **Git** then **Pull**:
 
 ![IntelliJ Pull Window](img/intellij-pull-start.png)
 
-At the moment, IntelliJ does not see anything that needs to be pulled.  We can refresh the remote status by pressing the **Refresh** button (the one next to the **Remote** drop-down).  Doing so will `fetch` the current state of the remote:
-
-![IntelliJ Pull Ready](img/intellij-pull-ready.png)
-
 Check the `origin/master` branch, and click **Pull**.  The `LICENSE` file should appear in your project - although it might take a minute.  You can go into the file-system to check if you are impatient.
 
-Let us now add the rest of our files ready to `commit` to GitHub.  Select **VCS** then **Git** and **Add**.  This will add all the qualifying files to our commit.  They are sitting in the *staging* area.  We look at version control in more detail in [Lecture 03](../../lectures/lecture03).
+Let us now add the rest of our files ready to `commit` to GitHub.  Select **Git** then **Add**.  This will add all the qualifying files to our commit.  They are sitting in the *staging* area.  We look at version control in more detail in [Lecture 03](../../lectures/lecture03).
 
-To create our commit, select **VCS** then **Commit** to open the **Commit Changes** window:
+To create our commit, select **Git**then **Commit** to open the **Commit Changes** window:
 
 ![IntelliJ Commit Changes](img/intellij-commit.png)
 
@@ -194,7 +196,7 @@ Your commits always need a message.  Set the **Commit Message** text-box to `Fir
 
 We have now created a checkpoint in our code that we can **always** return to.  This is the power of version control.  We are check-pointing our code so we can rewind to previous versions.  As long as you commit often, you can always revert back to a previous version.
 
-Our commit only exists on the local machine at the moment.  To send it to GitHub we have to `push` the commit to the remote.  To do this, select **VCS** then **Git** and **Push** to open the **Push Commits** window:
+Our commit only exists on the local machine at the moment.  To send it to GitHub we have to `push` the commit to the remote.  To do this, select **Git** and **Push** to open the **Push Commits** window:
 
 ![IntelliJ Push Commit](img/intellij-push.png)
 
@@ -242,10 +244,13 @@ Now select **Build** from the main menu, and then **Build Project**.  If all goe
 
 We now know that everything is working so far.  So let us commit the changes.  The steps to follow:
 
-1. Add the files to the commit - **VCS**, **Git**, then **Add**.
-2. Commit the changes - **VCS** then **Commit**.
+1. Open the Commit dialogue  **Git** then **Commit**.
+2. Add the new file to the staging area by selecting it under unversioned files.
 3. Make sure the author is updated, and add a suitable commit message before clicking **Commit**.
-4. Push the changes - **VCS**, **Git**, then **Push**.  Click **Push** in the **Push Commit** window.
+
+   ![Add and Commit](img/Commit_App.png)
+
+3. Push the changes to GitHub -  **Git**, then **Push**.  Click **Push** in the **Push Commit** window.
 
 **Get used to this process - it will save your code from disaster!**.  We have again created a checkpoint where we know our code is working and doing what we expect.  Whenever you do a change - and make your changes small - and tested the build works, commit and push.  I will remind you a few more times, but this is a habit for you to form.
 
@@ -278,7 +283,7 @@ If Docker is working correctly you should get the following output:
 ```shell
 Unable to find image 'hello-world:latest' locally
 latest: Pulling from library/hello-world
-9db2ca6ccae0: Pull complete 
+9db2ca6ccae0: Pull complete
 Digest: sha256:4b8ff392a12ed9ea17784bd3c9a8b1fa3299cac44aca35a85c90c5e3c7afacdc
 Status: Downloaded newer image for hello-world:latest
 
@@ -498,11 +503,11 @@ When executed you will get the following output:
 Sending build context to Docker daemon  2.048kB
 Step 1/2 : FROM ubuntu:latest
 latest: Pulling from library/ubuntu
-6b98dfc16071: Pull complete 
-4001a1209541: Pull complete 
-6319fc68c576: Pull complete 
-b24603670dc3: Pull complete 
-97f170c87c6f: Pull complete 
+6b98dfc16071: Pull complete
+4001a1209541: Pull complete
+6319fc68c576: Pull complete
+b24603670dc3: Pull complete
+97f170c87c6f: Pull complete
 Digest: sha256:5f4bdc3467537cbbe563e80db2c3ec95d548a9145d64453b06939c4592d67b6d
 Status: Downloaded newer image for ubuntu:latest
  ---> 113a43faa138
@@ -619,4 +624,4 @@ I get the output:
 Boo yah!
 ```
 
-We can share this image on Dockerhub (or via private Docker repositories) so others can run our application easily.
+##### We can share this image on Dockerhub (or via private Docker repositories) so others can run our application easily.

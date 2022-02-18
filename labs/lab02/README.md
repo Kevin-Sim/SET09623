@@ -1,135 +1,177 @@
-# Lab 02: Continous Integration Setup
+# Lab 02: Continuous Integration Setup
 
-In this lab we will automate our build process using [Travis CI](https://travis-ci.org/).  CI is [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration), a software engineering method where we ensure our local development software versions are merged into the mainline code several times a day.  There are several CI approaches available, but Travis is easy to plug into our software production pipeline.
 
-## Behavioural Objectives
+In this lab we will automate our build process using [GitHub Actions] (https://github.com/features/actions). CI is [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration), a software engineering method where we ensure our local development software versions are merged into the mainline code several times a day. There are several CI approaches available, but GitHub actions is easy to plug into our software production pipeline.
+
+### Behavioural Objectives
 
 After this lab you will be able to:
 
-- [ ] **Pull your project** to *return to your previous development state.*
-- [ ] **Add** *continuous integration with Travis CI to your project.*
-- [ ] **Integrate** *Docker into Travis CI build step.*
-- [ ] **Define** the *Gitflow Workflow.*
-- [ ] **Link** *Docker containers.*
-- [ ] **Package** an **application JAR with IntelliJ.*
-- [ ] **Create** a *release on GitHub.*
+-   \[ \] **Pull your project** to *return to your previous development state.*
 
-## Pulling Back Your Project
+-   \[ \] **Add** *continuous integration to your project.*
 
-At the end of the last lab we had a working application that we could deploy to Docker.  Everything was done using three files:
+-   \[ \] **Integrate** *Docker into CI build step.*
 
-- A **pom.xml** Maven build file, which we have not explored further yet.
-- An **App.java** code file that contains our current code which is just a *Hello World* example.
-- A **Dockerfile** that specifies how to run our application in a separate Docker container.
+-   \[ \] **Define** the *Gitflow Workflow.*
+
+-   \[ \] **Link** *Docker containers.*
+
+-   \[ \] **Package** an *application JAR with IntelliJ.*
+
+-   \[ \] **Create** a *release on GitHub.*
+
+### Pulling Back Your Project
+
+At the end of the last lab we had a working application that we could deploy to Docker. Everything was done using three files:
+
+-   A **pom.xml** Maven build file, which we have not explored further yet.
+    
+-   An **App.java** code file that contains our current code which is just a *Hello World* example.
+    
+-   A **Dockerfile** that specifies how to run our application in a separate Docker container.
 
 We have three other files in our repository:
 
-- A **.gitignore** file to tell Git which files and folders to ignore for versioning.
-- A **README.md** file for our project.
-- A **LICENSE** file defining the licensing terms for our project.
+-   A **.gitignore** file to tell Git which files and folders to ignore for versioning.
+    
+-   A **README.md** file for our project.
 
-Everything is in our GitHub repository.  We can pull this back in IntelliJ to start from where we left off.  If your code is still on the machine you are using you can ignore this step.
+-   A **LICENSE** file defining the licensing terms for our project.
+
+Everything is in our GitHub repository. We can pull this back in IntelliJ to start from where we left off. If your code is still on the machine you are using you can ignore this step.
 
 ### Starting IntelliJ
 
-Start IntelliJ to get the landing window:
+If you are using your own machine IntelliJ will open the last project that was opened. If not then you will need to clone the project from your GitHub Repository
 
-![IntelliJ Start Window](img/intellij-start-window.png)
+![Graphical user interface, application, Teams Description automatically
+generated](./img/image1.png)
 
-The button to click on is **Check out from Version Control**, then select **Git**:
+IntelliJ Start Window
 
-![IntelliJ Import from Git](img/intellij-import-git.png)
+The button to click on is **Get from VCS**, then select **Git**:
 
-The simplest method is to click on **Login with GitHub** and add your details to the following window:
+![Graphical user interface, text, application Description automatically
+generated](./img/image2.png)
 
-![IntelliJ Login GitHub](img/github-login.png)
+IntelliJ Import from Git
 
-Enter your login details.  The window will stay open, so click **Cancel**.  Don't worry - you will have logged in.
+If you have not saved login credentials you may be asked to provide these The simplest method is to click on **Login with GitHub** and add your details:
 
-Open the **Check out from Version Control** window again, and select the **sem** repo we created in the last lab.  Click **Clone** and select **Yes** to have IntelliJ create a new project from the source code.  This will open the **Import Project** window:
+Note that GitHub now prefers a token for authentication rather than a password.
 
-![IntelliJ Import Project](img/intellij-import-project.png)
+### Creating a GitHub token
 
-Select **Import project from external model** and **Maven** and select **Next**.  This will open the following window:
+Go to your GitHub account. From the menu at the top right select settings
 
-![IntelliJ Import Maven](img/intellij-import-maven.png)
+![Graphical user interface, application Description automatically
+generated](./img/image3.png)
 
-Ensure that **Import Maven Projects Automatically** is selected and click **Next**.  The following window will open:
+On the left hand side select Developer Settings
 
-![IntelliJ Import Artifact](img/intellij-import-sem.png)
+![Graphical user interface, application Description automatically
+generated](./img/image4.png)
 
-Click **Next**.  The following window will open:
+On the next screen select Personal access tokens then Generate New Token
 
-![IntelliJ Import Project SDK](img/intellij-import-jdk.png)
+![Graphical user interface, text, application Description automatically
+generated](./img/image5.png)
 
-Click **Next** again.  The following window will open:
+Tick the workflow option which will allow us access using our CI environment and at the bottom of the page select generate token
 
-![IntelliJ Import Project Name](img/intellij-import-end.png)
+![Graphical user interface, text, application, email Description
+automatically generated](./img/image6.png)
 
-Click **Finish** to complete the import process and open the main IntelliJ window.
+The Token that is generated is used instead of your password. Make sure you take a note of this as once you navigate away from the page you will no longer be able to retrieve it.
 
-Now we need to check that everything works correctly.  Perform the following steps:
+Next time you try to push code to your repository a GitHub login window will appear. Use the token instead of your password. Sometimes I find that this does not work the first time and I am prompted again from the IntelliJ terminal window. Entering the details again seems to fix the issue.
 
-1. Build the project (**Build** then **Build Project**).
-2. Run the project locally (open **App.java** and click the **green triangle** next to **public class App** and select **Run App.main()**).
-3. Install Docker and the IntelliJ Docker plugin if needed (see [the last lab](../lab01/)).
-4. Run the project via Docker (open **Dockerfile** and click the **green triangles** at the top of the file and select **Run on Docker**).
+Now we need to check that everything works correctly. Perform the following steps:
 
-Hopefully everything has worked and we are back to the point we left off at last week.  **Remember these steps**.  You will need to repeat them every time you pull back your project to a new local system.
+1.  Build the project (**Build** then **Build Project**).
 
-## Adding Travis CI to Your Repository
+2.  Run the project locally (open **App.java** and click the **green triangle** next to **public class App** and select **Run App.main()**).
+    
+3.  Install Docker and the IntelliJ Docker plugin if needed (see [the last lab](../lab01/)).
+    
+4.  Run the project via Docker (open **Dockerfile** and click the **green triangles** at the top of the file and select **Run on Docker**).
 
-With our project back on our local machine we can set-up Travis CI.  This is automated via the [Travis CI website](https://travis-ci.org/).  Go there now:
+Hopefully everything has worked and we are back to the point we left off at last week. **Remember these steps**. You will need to repeat them every time you pull back your project to a new local system.
 
-![Travis CI Website](img/travis-ci.png)
+Adding CI to Your Repository
+----------------------------
 
-Select **Login with GitHub**.  If you are already logged into GitHub (which you probably are) this should be done fairly easily.  Once you have signed up and activated your account you should be taken to your profile page which has the URL `https://travis-ci.org/profile/<github-username>`:
+We can now set-up GitHub Actions. On your GitHub repository select the actions tab at the top then select *set up workflow yourself*
 
-![Travis CI Profile](img/travis-settings.png)
+![Graphical user interface, text, application, email Description
+automatically generated](./img/image7.png)
 
-Activate Travis for the **sem** repository by activating the toggle next to the project as shown in the image.  And that is it - Travis is integrated into our GitHub account.
+This will create a file in your repository named 
 
-Travis CI is triggered by pushes to our repository and so we do not need to do anything specific within Travis itself.  However, we do need to tell Travis how to build our application.
+`.github/workflows/main.yml`
 
-### Adding a Travis Build File
-
-Add a new file to the root of your project called `.travis.yml`.  The contents are below:
+Replace the default text with the following
 
 ```yml
-language: java
+name: A workflow for my Hello World App
+on: push
+
+jobs:
+  build:
+    name: Hello world action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Compile with Maven
+        run: mvn compile
+      - name: Build Docker Image
+        run: docker build -t semimage .
+      - name: Run image
+        run: docker run --name semcontainer -d semimage
+      - name: view logs
+        run: docker logs semcontainer
 ```
 
-Add that is it.  Travis can take a lot of configuration which we will see as we go through the module.  However, for Maven projects Travis knows what to do, so our life is easy.
+To sync our local version do a pull from IntelliJ 
 
-Now to push the updates to our GitHub repository.  Remember the three steps.
+![1642967004914](img/1642967004914.png)
 
-1. Add the updates to the commit.
-2. Create a commit.  Use a sensible message.
-3. Push the commit.
+To check if our CI workflow is working make some changes and push them to GitHub
 
-Now we can go to the Travis and see if our build was successful.  You can click on the **sem** project in Travis, or go to the project's dashboard `https://travis-ci.org/<github-username>/sem`.  You should see something similar to the following:
+1. Add some text to your `Readme.md` file.
+2. Add the updates to the commit.
+3. Create a commit.  Use a sensible message.
+4. Push the commit.
 
-![Travis CI Build Status](img/travis-build-status.png)
+Now we can go to GitHub see if our build was successful.  
 
-Which shows our build is passing.  You can also see the build log under this information to see where problems are.
+![1642967431174](img/1642967431174.png)
 
-### Adding Travis Badge
+You can click on the **action** to show more details of the build.
+
+![2022-01-23 19_52_58-Window](img/action1.png)
+
+The stages shown above duplicate the stages in our workflow file that we defined above main.yml
+
+### Adding Build Badge
 
 You might have seen build status badges on GitHub before like this one:
 
-[![Build Status](https://travis-ci.org/Kevin-Sim/devops.svg?branch=master)](https://travis-ci.org/Kevin-Sim/devops)
+![Build Status](img/build_passing.png)
 
-This is taken straight from Travis CI and you can add the badge for your build status to your `README.md` file as well.  To do this, click on the build status badge for your project in Travis CI.  This will open a window allowing you to get the code to access the build status badge:
+You can add the badge for your build status to your `README.md` file as well.  To do this, add the following text to your `Readme.md` file
 
-![Travis Build Status Badge Code](img/travis-badge-code.png)
-
-Make sure you select **Markdown**.  Now we just need to add this to our `README.md` file for the project.  Change the build status code to that which you get from Travis.
-
-```md
-# Software Engineering Methods
-
-- Build Status [![Build Status](https://travis-ci.org/Kevin-Sim/sem.svg?branch=master)](https://travis-ci.org/Kevin-Sim/sem)
 ```
+![workflow](https://github.com/<UserName>/<RepositoryName>/actions/workflows/main.yml/badge.svg)
+```
+
 Now go through our Git update steps:
 
 1. Add files to commit.
@@ -138,29 +180,20 @@ Now go through our Git update steps:
 
 Now if you go to your GitHub page you should see the following:
 
-![Build Status on GitHub](img/github-build-status.png)
+![2022-01-23 20_04_29-Window](img/commit1.png) 
 
-And now we have our project automatically building on pushes to GitHub, and the current build status being displayed on our GitHub landing page.
+
+And now we have our project automatically building on pushes to GitHub, and the current build status
 
 ### Other Badges
 
 You can add various badges to your project.  [Sheilds.io](https://shields.io/) is one such site that provides badges.  We are going to add two to our `README.md`: one for our license and one for our release.  The license badge takes the URL:
 
-`[![LICENSE](https://img.shields.io/github/license/Kevin-Sim/sem.svg?style=flat-square)](https://github.com/Kevin-Sim/sem/blob/master/LICENSE)`
+`[![LICENSE](https://img.shields.io/github/license/<github-username>/sem.svg?style=flat-square)](https://github.com/<github-username>/sem/blob/master/LICENSE)`
 
 Just replace `<github-username>` with your GitHub username.  The release badge is:
 
-`[![Releases](https://img.shields.io/github/release/Kevin-Sim/sem/all.svg?style=flat-square)](https://github.com/Kevin-Sim/sem/releases)`
-
-At the moment we don't have any releases so the badge won't work.  We will recify this shortly.  Update your `README.md` file to the following (remembering to change the username):
-
-```md
-# Software Engineering Methods
-
-- Build Status [![Build Status](https://travis-ci.org/Kevin-Sim/sem.svg?branch=master)](https://travis-ci.org/Kevin-Sim/sem)
-- License [![LICENSE](https://img.shields.io/github/license/Kevin-Sim/sem.svg?style=flat-square)](https://github.com/Kevin-Sim/sem/blob/master/LICENSE)
-- Release [![Releases](https://img.shields.io/github/release/Kevin-Sim/sem/all.svg?style=flat-square)](https://github.com/Kevin-Sim/sem/releases)
-```
+`[![Releases](https://img.shields.io/github/release/<github-username>/sem/all.svg?style=flat-square)](https://github.com/<github-username>/sem/releases)`
 
 And then update your GitHub repository:
 
@@ -170,38 +203,9 @@ And then update your GitHub repository:
 
 If you go to your repository's dashboard in GitHub you should see your new badges.
 
-## Travis and Docker
+![badges](img/badges.png)
 
-We can also have Travis build and test our Dockerfile build.  This requires updates to our `.travis.yml` file:
 
-```yml
-sudo: required
-
-language: java
-
-services:
-  - docker
-
-after_success:
-  - docker build -t se_methods .
-  - docker run se_methods
-```
-
-What we have done:
-
-- Added superuser (`sudo`) status for the build.  This is required for Docker builds on Travis.
-- Stated we want the `docker` service available in our build system.
-- `after_success` means after the project has been successfully built.  Two commands are executed:
-  - Build the Docker image.
-  - Run an instance of the created Docker image.
-
-Now let us test this with Travis by first adding the updates:
-
-1. Add files to the commit.
-2. Create commit.
-3. Push to GitHub.
-
-Go to your Travis CI dashboard for the repository and wait for the build to complete.  Everything should go well, and you can check that the final output - `Boo yah!` - is in the build log.
 
 ## Setting up Gitflow Workflow
 
@@ -227,15 +231,15 @@ The `develop` branch only exists on the local system.  To add it to GitHub we ha
 
 #### Adding Develop Build Status to GitHub
 
-Travis CI will have automatically added this branch to its build.  As `develop` is a key branch of our project we will add this build status to the `README.md` file.  Get the necessary code from Travis CI as before, remembering to select the **develop** branch.  Update the `README.md` as below:
+GitHub will have automatically added this branch to its build.  As `develop` is a key branch of our project we will add this build status to the `README.md` file.  
+
+This time I will use Shields.io to create a build badge. Go to [https://shields.io/category/build](https://shields.io/category/build) and select GitHub Workflow Status (branch). Fill in the UserName, RepositoryName, Workflow name (taken from the main.yml file)  and branch name
+
+Update the `README.md` as below (keep the other badges):
 
 ```markdown
 # Software Engineering Methods
-
-- Master Build Status [![Build Status](https://travis-ci.org/kevin-chalmers/sem.svg?branch=master)](https://travis-ci.org/kevin-chalmers/sem)
-- Develop Build Status [![Build Status](https://travis-ci.org/kevin-chalmers/sem.svg?branch=develop)](https://travis-ci.org/kevin-chalmers/sem)
-- License [![LICENSE](https://img.shields.io/github/license/kevin-chalmers/sem.svg?style=flat-square)](https://github.com/kevin-chalmers/sem/blob/master/LICENSE)
-- Release [![Releases](https://img.shields.io/github/release/kevin-chalmers/sem/all.svg?style=flat-square)](https://github.com/kevin-chalmers/sem/releases)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/<username>/<repository>/<action name taken from main.yml>/<branch>?style=flat-square)
 ```
 
 And add this to GitHub:
@@ -267,29 +271,25 @@ This may seem like a lot of steps, but individually they are simple.  What could
 
 Our first step is to start a new MongoDB container.  Let us do this via IntelliJ rather than the command line.
 
-Open the Docker panel at the bottom of IntelliJ and make sure **Images** is highlighted:
+Open the Services panel at the bottom of IntelliJ and make sure **Images** is highlighted. The button on the top-left allows us to pull images for Docker.  Click this button to open the **Images Console** window:
 
 ![IntelliJ Docker Panel](img/intellij-docker-panel.png)
 
-The button on the top-left allows us to pull images for Docker.  Click this button to open the **Pull Image** window:
+Type **mongo** press ctrl + Enter to start.  The latest version of MongoDB will now be pulled as an image. It will appear in the Docker panel of IntelliJ:
 
-![IntelliJ Pull Image](img/intellij-pull-image.png)
+With `mongo:latest` selected, click the **plus sign** to **Create Container**.  This will open the following window:
 
-Type **mongo** as the **Repository** and click **OK**.  The latest version of MongoDB will now be pulled as an image. It will appear in the Docker panel of IntelliJ:
+Add the run options from the Modify Options Link
 
-![IntelliJ with MongoDB Image](img/intellij-mongo-image.png)
+![IntelliJ Create Container](img/createMongo.png)
 
-With `mongo:latest` selected, click the **blue plus sign** to **Create Container**.  This will open the following window:
-
-![IntelliJ Create Container](img/intellij-create-container.png)
-
-MongoDB is a server application which listens on port 27017.  We could just open that port, but just in case MongoDB is already running locally we will switch ports.  We looked at this in the last lab.  In the **Command Line Options** text box add **-p 27000:27017** as shown in the image.  Then click **Run**.  IntelliJ will start the container and it will be waiting for you to use.
+MongoDB is a server application which listens on port 27017.  We could just open that port, but just in case MongoDB is already running locally we will switch ports.  We looked at this in the last lab.  In the **Run Options** text box add **-p 27000:27017** as shown in the image.  Then click **Run**.  IntelliJ will start the container and it will be waiting for you to use.
 
 ### Starting a Feature Branch
 
 We are going to add a new feature to our application.  To do this, we need to create a new branch as we did for `develop`.  The steps you need to undertake are:
 
-1. Create a new branch called `feature/mongo-intergration` (**VCS**, **Git** then **Branches**.  **Create Branch**).
+1. Create a new branch called `feature/mongo-intergration` (**Git** then **New Branch**
 2. Push the branch to GitHub.
 
 That is it.  We are now working on a feature branch, which we created from our `develop` branch since it was the one we had checked out.
@@ -308,7 +308,7 @@ We will use Maven to manage the import of MongoDB functionality into our applica
     </dependencies>
 ```
 
-We add this to the `pom.xml` file as follows:
+We add this to the `pom.xml` file as follows: 
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -320,8 +320,8 @@ We add this to the `pom.xml` file as follows:
     <groupId>com.napier.sem</groupId>
     <artifactId>seMethods</artifactId>
     <version>0.1.0.1</version>
-
-    <dependencies>
+    
+     <dependencies>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver</artifactId>
@@ -331,6 +331,11 @@ We add this to the `pom.xml` file as follows:
 
 </project>
 ```
+
+If IntelliJ does not automatically download the dependencies click on the refresh button on the maven panel:
+
+![Refresh Maven](img/maven_refresh.png)
+
 
 IntelliJ will manage everything for us.  Initially the test `org.mongodb` and `mongodb-driver` will be red, but once the import is complete it will turn black.  Let us to a commit.
 
@@ -359,10 +364,10 @@ public class App
         // Get a collection from the database
         MongoCollection<Document> collection = database.getCollection("test");
         // Create a document to store
-        Document doc = new Document("name", "Kevin Chalmers")
-                           .append("class", "Software Engineering Methods")
-                           .append("year", "2018/19")
-                           .append("result", new Document("CW", 95).append("EX", 85));
+        Document doc = new Document("name", "Kevin Sim")
+                .append("class", "Software Engineering Methods")
+                .append("year", "2021")
+                .append("result", new Document("CW", 95).append("EX", 85));
         // Add document to collection
         collection.insertOne(doc);
 
@@ -376,32 +381,34 @@ public class App
 Now all we have to do is run the application normally (i.e. not as a Docker container).  Select **Run** then **Run** and select **App** as the configuration.  Your application should launch, connect to the MongoDB server running in the Docker container and perform some basic operations as shown.  The console output will look something like the following:
 
 ```shell
-/usr/lib/jvm/java-10-jdk/bin/java -javaagent:/opt/JetBrains/apps/IDEA-U/ch-0/182.3458.5/lib/idea_rt.jar=37241:/opt/JetBrains/apps/IDEA-U/ch-0/182.3458.5/bin -Dfile.encoding=UTF-8 -classpath /home/kevin/IdeaProjects/sem/target/classes:/home/kevin/.m2/repository/org/mongodb/mongodb-driver/3.6.4/mongodb-driver-3.6.4.jar:/home/kevin/.m2/repository/org/mongodb/bson/3.6.4/bson-3.6.4.jar:/home/kevin/.m2/repository/org/mongodb/mongodb-driver-core/3.6.4/mongodb-driver-core-3.6.4.jar com.napier.sem.App
-Jul 15, 2018 3:05:09 PM com.mongodb.diagnostics.logging.JULLogger log
+"C:\Program Files\Java\jdk1.8.0_181\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2020.3.2\lib\idea_rt.jar=51700:C:\Program Files\JetBrains\IntelliJ IDEA 2020.3.2\bin" -Dfile.encoding=UTF-8 -classpath "C:\Program Files\Java\jdk1.8.0_181\jre\lib\charsets.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\deploy.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\access-bridge-64.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\cldrdata.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\dnsns.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\jaccess.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\jfxrt.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\localedata.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\nashorn.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunec.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunjce_provider.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunmscapi.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunpkcs11.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\zipfs.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\javaws.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jce.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jfr.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jfxswt.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jsse.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\management-agent.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\plugin.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\resources.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\rt.jar;C:\Users\KevL\Desktop\SEM_Demo\target\classes;C:\Users\KevL\.m2\repository\org\mongodb\mongodb-driver\3.6.4\mongodb-driver-3.6.4.jar;C:\Users\KevL\.m2\repository\org\mongodb\bson\3.6.4\bson-3.6.4.jar;C:\Users\KevL\.m2\repository\org\mongodb\mongodb-driver-core\3.6.4\mongodb-driver-core-3.6.4.jar" com.napier.sem.App
+Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
 INFO: Cluster created with settings {hosts=[localhost:27000], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
-Jul 15, 2018 3:05:09 PM com.mongodb.diagnostics.logging.JULLogger log
+Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
 INFO: Cluster description not yet available. Waiting for 30000 ms before timing out
-Jul 15, 2018 3:05:10 PM com.mongodb.diagnostics.logging.JULLogger log
+Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
 INFO: Opened connection [connectionId{localValue:1, serverValue:1}] to localhost:27000
-Jul 15, 2018 3:05:10 PM com.mongodb.diagnostics.logging.JULLogger log
-INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27000, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[4, 0, 0]}, minWireVersion=0, maxWireVersion=7, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=4442274}
-Jul 15, 2018 3:05:10 PM com.mongodb.diagnostics.logging.JULLogger log
+Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27000, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[4, 4, 3]}, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=4243600}
+Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
 INFO: Opened connection [connectionId{localValue:2, serverValue:2}] to localhost:27000
-{ "_id" : { "$oid" : "5b4b5495da12e64fb1d0b7cc" }, "name" : "Kevin Chalmers", "class" : "Software Engineering Methods", "year" : "2018/19", "result" : { "CW" : 95, "EX" : 85 } }
+{ "_id" : { "$oid" : "60193a68517ac5004c914c07" }, "name" : "Kevin Sim", "class" : "Software Engineering Methods", "year" : "2021", "result" : { "CW" : 95, "EX" : 85 } }
 
 Process finished with exit code 0
+
 ```
 
-If you look at the logs of the MongoDB container in IntelliJ you will see the following lines added:
+If you look at the logs of the MongoDB container in IntelliJ you will see the something similar to the following partial log:
 
 ```shell
-2018-07-15T14:05:09.917+0000 I NETWORK  [listener] connection accepted from 172.17.0.1:57888 #1 (1 connection now open)
-2018-07-15T14:05:09.978+0000 I NETWORK  [conn1] received client metadata from 172.17.0.1:57888 conn1: { driver: { name: "mongo-java-driver", version: "3.6.4" }, os: { type: "Linux", name: "Linux", architecture: "amd64", version: "4.17.5-1-ARCH" }, platform: "Java/Oracle Corporation/10.0.1+10" }
-2018-07-15T14:05:10.055+0000 I NETWORK  [listener] connection accepted from 172.17.0.1:57892 #2 (2 connections now open)
-2018-07-15T14:05:10.056+0000 I NETWORK  [conn2] received client metadata from 172.17.0.1:57892 conn2: { driver: { name: "mongo-java-driver", version: "3.6.4" }, os: { type: "Linux", name: "Linux", architecture: "amd64", version: "4.17.5-1-ARCH" }, platform: "Java/Oracle Corporation/10.0.1+10" }
-2018-07-15T14:05:10.113+0000 I STORAGE  [conn2] createCollection: mydb.test with generated UUID: a549ece2-96cb-4995-85af-5db19e0336b0
-2018-07-15T14:05:10.559+0000 I NETWORK  [conn1] end connection 172.17.0.1:57888 (0 connections now open)
-2018-07-15T14:05:10.559+0000 I NETWORK  [conn2] end connection 172.17.0.1:57892 (1 connection now open)
+
+{"t":{"$date":"2021-02-02T11:41:28.619+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"172.17.0.1:58692","connectionId":2,"connectionCount":2}}
+{"t":{"$date":"2021-02-02T11:41:28.619+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn2","msg":"client metadata","attr":{"remote":"172.17.0.1:58692","client":"conn2","doc":{"driver":{"name":"mongo-java-driver","version":"3.6.4"},"os":{"type":"Windows","name":"Windows 10","architecture":"amd64","version":"10.0"},"platform":"Java/Oracle Corporation/1.8.0_181-b13"}}}
+{"t":{"$date":"2021-02-02T11:41:28.639+00:00"},"s":"I",  "c":"STORAGE",  "id":20320,   "ctx":"conn2","msg":"createCollection","attr":{"namespace":"mydb.test","uuidDisposition":"generated","uuid":{"uuid":{"$uuid":"b862f932-c8aa-4b30-904b-0c3a1e6a1dd2"}},"options":{}}}
+{"t":{"$date":"2021-02-02T11:41:28.658+00:00"},"s":"I",  "c":"INDEX",    "id":20345,   "ctx":"conn2","msg":"Index build: done building","attr":{"buildUUID":null,"namespace":"mydb.test","index":"_id_","commitTimestamp":{"$timestamp":{"t":0,"i":0}}}}
+{"t":{"$date":"2021-02-02T11:41:29.035+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn2","msg":"Connection ended","attr":{"remote":"172.17.0.1:58692","connectionId":2,"connectionCount":0}}
+{"t":{"$date":"2021-02-02T11:41:29.035+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn1","msg":"Connection ended","attr":{"remote":"172.17.0.1:58688","connectionId":1,"connectionCount":1}}
+
 ```
 
 A good time to push this update to GitHub.
@@ -421,7 +428,7 @@ We are going to undertake the following steps:
 1. Create a self-contained JAR for our project - this will include any external libraries.
 2. Add a network bridge to docker.
 3. Update our code files, Dockerfile, and MongoDB instance.
-4. Update Travis CI build file.
+4. Update GitHub Actions build file.
 
 #### Creating a Self-contained JAR
 
@@ -431,14 +438,16 @@ First we must update our `pom.xml` file.  Add the following below the `dependenc
 
 ```xml
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>10</maven.compiler.source>
+        <maven.compiler.target>10</maven.compiler.target>
     </properties>
 
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -465,7 +474,7 @@ First we must update our `pom.xml` file.  Add the following below the `dependenc
 
 We have added two new sections:
 
-1. `properties` - here we are telling Maven to produce Java 8 code (1.8).
+1. `properties` - here we are telling Maven to produce Java 10 code. Code compiled to Java 10 compliance will run on any version of Java from 10 upwards. The instructions for GitHub Actions later in this Lab use Java 11 as the execution environment so we must compile to a version of Java <= 11. 
 2. `build` - there is quite a bit going on here.  You can happily reuse the code though:
     - We are defining how Maven assembles the JAR file.
     - We are telling Maven which class to run when the JAR is executed (`mainClass`).
@@ -493,15 +502,15 @@ This will have created a new network called `se-methods`.  We can use this netwo
 
 #### Updating Our System
 
-First we need to stop our current MongoDB server.  In IntelliJ you should be able to see this in the Docker panel under **Containers**.  To stop it, select the container and **click** the **red stop button** on the left:
+First we need to stop our current MongoDB server.  In IntelliJ you should be able to see this in the Services panel under **Containers**.  To stop it, select the container and **click** the **red stop button** on the left:
 
-![IntelliJ Docker Container List](img/intellij-stop-container.png)
+![IntelliJ Docker Container List](img/containers.png)
 
 Once stopped, **right-click** on the container, and select **Delete Container** and then **Yes** in the prompt.
 
 We need to create a new MongoDB server that uses our network infrastructure, and we also want to define the name of the server.  We do this by creating a new container from `mongo:latest` in IntelliJ using the following parameters:
 
-![MongoDB Container Settings](img/intellij-mongo-settings.png)
+![MongoDB Container Settings](img/dockerconfig.png)
 
 Click **Run** and the container will start.  Next we need to update our main application so it can talk to this MongoDB server.  The only line that needs updating is the `MongoClient` creation one:
 
@@ -519,37 +528,65 @@ WORKDIR /tmp
 ENTRYPOINT ["java", "-jar", "seMethods-0.1.0.1-jar-with-dependencies.jar"]
 ```
 
-We have changed what we are copying to the JAR file that has been created.  We are also changing our entry point to execute this JAR.  Let us build the image for this.  You can do this by clicking the **green triangles** in the Dockerfile and selecting **Build Image for Dockerfile**.  The image will be created and added to the list of images in IntelliJ's Docker Panel, near the bottom with an `sha256` name.  If you have more than one of these because of previous builds, delete all the `sha256` images and rebuild to have only one.
+We have changed what we are copying to the JAR file that has been created.  We are also changing our entry point to execute this JAR.  We need to first update our jar file, rebuild the docker image and restart the container.
+
+- Delete the target directory
+- Run Maven Package to recreate the jar file
+- Build the Docker Image (You can do this by clicking the **green triangles** in the Dockerfile and selecting **Build Image for Dockerfile**.  )
+- The image will be created and added to the list of images in IntelliJ's Docker Panel, near the bottom with an `sha256` name.  If you have more than one of these because of previous builds, delete all the `sha256` images and rebuild to have only one.
 
 To test our new image, select **Create Container** with it selected and use the following properties:
 
-![Application Docker Settings](img/intellij-app-container.png)
+![Application Docker Settings](img/dockerconfig1.png)
 
-Click **Run** and our container will start our application which will connect to the MongoDB server and exit.  Time for an update to GitHub:
+Click **Run** and our container will start our application which will connect to the MongoDB server and exit.  If successful you will see output on the container logs
+
+![Container Logs](img/containerlogs.png)
+
+
+Time for an update to GitHub. 
 
 1. Add files to commit.
 2. Create commit.
 3. Push to GitHub.
 
-#### Updating Travis Build
+#### Updating GitHub Actions
 
-Now to put this into our Travis build file:
+Now to put this into our GitHub Actions file:
 
 ```yml
-sudo: required
+name: A workflow for my Hello World App
+on: push
 
-language: java
+jobs:
+  build:
+    name: Hello world action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Setup network
+        run: |
+          docker network create --driver bridge se-methods
+          docker pull mongo
+          docker run -d --name mongo-dbserver --network se-methods mongo
+      - name: Build with Maven
+        run: mvn package
+      - name: Build
+        run: docker build -t se_methods .
+      - name: Run image
+        run: docker run --network se-methods --name semcontainer se_methods
+      - name: view logs
+        run: docker logs semcontainer
 
-services:
-  - docker
-
-after_success:
-  - docker network create --driver bridge se-methods
-  - docker pull mongo
-  - docker run -d --name mongo-dbserver --network se-methods mongo
-  - docker build -t se_methods .
-  - docker run --network se-methods se_methods
 ```
+
+Make sure your Maven configuration (pom.xml) is compiling to Java 10. (See above under the heading Creating a Self-contained JAR)
 
 We have a few more Docker commands but these are just the ones we added via IntelliJ or otherwise.  Now push this to GitHub:
 
@@ -557,13 +594,13 @@ We have a few more Docker commands but these are just the ones we added via Inte
 2. Create commit.
 3. Push to GitHub.
 
-Check with Travis CI and ensure that not only is the project building but that it successfully runs in Docker.  You will need to open some of the code folds to verify.
+Check with GitHub Actions and ensure that not only is the project building but that it successfully runs in Docker.  You will need to open some of the code folds to verify.
 
 ### Merging Feature
 
 It's time to merge our feature back into the `develop` branch.  Before doing this, we need to check that no changes have occurred in `develop`.  Although we know there hasn't been, we need to get into the habit of managing the workflow.
 
-To `merge` any changes in the `develop` branch onto our feature branch, select **VCS**, **Git**, then **Branches...**.  This will open up the **Branches Popup**:
+To `merge` any changes in the `develop` branch onto our feature branch, select **Git**, then **Branches...**.  This will open up the **Branches Popup**:
 
 ![IntelliJ Branches Popup](img/intellij-merge-branch.png)
 
@@ -605,7 +642,7 @@ Now we need to `merge` this release back into `master`.  The steps you need to t
 
 #### Version Tags
 
-Git commits can also be tagged.  To do this in IntelliJ, select **VCS**, **Git** then **Tag** to open the **Tag** window:
+Git commits can also be tagged.  To do this in IntelliJ, select **Git** then **New Tag** to open the **Tag** window:
 
 ![intelliJ Create Tag](img/intellij-git-tag.png)
 
@@ -619,11 +656,9 @@ Click **Push** and your tag will be added to GitHub.
 
 Now to create a release on GitHub.  Go to the GitHub page for your project and select the **Releases** tab to open the following window:
 
-![GitHub Releases](img/github-release.png)
+![GitHub Releases](img/new_release1.png)
 
 Click **Create new release** to start entering the release details:
-
-![GitHub Release Details](img/github-release-details.png)
 
 The details we want are below:
 
@@ -663,7 +698,7 @@ This is our current workflow.  This is an important set of steps so document the
 1. Pull the latest `develop` branch.
 2. Start a new feature branch.
 3. Once feature is finished, create JAR file.
-4. Update and test Docker configuration with Travis.
+4. Update and test Docker configuration with GitHub Actions.
 5. Update feature branch with `develop` to ensure feature is up-to-date.
 6. Check feature branch still works.
 7. Merge feature branch into `develop`.

@@ -19,6 +19,4 @@
 
 ## Copyright Notice
 
-All material provided is developed by Kevin Chalmers and modified by Kevin Sim and is &copy; 2019 Edinburgh Napier University unless otherwise stated.  Use and copying of this material is permitted under the Apache 2.0 license with suitable attribution given to the author.
-
-The author accepts no liability in the use of this material.
+All material provided is &copy; 2019 Edinburgh Napier University unless otherwise stated.  Use and copying of this material is permitted under the Apache 2.0 license with suitable attribution given.

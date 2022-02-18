@@ -165,7 +165,7 @@ The code reviews will take place each Friday sessions.  Each group will be given
 
 **All team members** should attend the code review, however commitments and other considerations will be taken into account.  **Individuals attendance at reviews will be monitored** to ensure the team is contributing collectively to the project.
 
-**Being ready** means that you are ready to present the points for the code review.  This means that you have a computer with the various tools logged into (e.g., GitHub, Travis CI, etc.) and a building version of the application in IntelliJ.
+**Being ready** means that you are ready to present the points for the code review.  This means that you have a computer with the various tools logged into (e.g., GitHub, etc.) and a building version of the application in IntelliJ.
 
 ### Code Review 1
 
@@ -181,7 +181,7 @@ The following must be in place:
 - [ ] Product Backlog created.
 - [ ] Project builds to self-contained JAR with Maven.
 - [ ] Dockerfile for project set-up and works.
-- [ ] Travis CI for project set-up and build is working using JAR, and Docker on Travis CI.
+- [ ] GitHub Actions for project set-up and build is working using JAR, and Docker
 - [ ] Correct branches for GitFlow workflow created - includes `master`, `develop`, and `release` branches.
 - [ ] First release created on GitHub.
 - [ ] Code of Conduct defined.
@@ -234,7 +234,7 @@ The following must be in place:
 
 - [ ] Suitable unit tests defined.
 - [ ] Suitable integration tests defined.
-- [ ] Tests running on Travis CI.
+- [ ] Tests running on GitHub Actions
 
 #### Graded Criteria Submission 3 (8% of CW mark)
 
