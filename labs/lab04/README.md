@@ -358,7 +358,7 @@ We have expanded our process at the start and the end to incorporate our Sprint 
 8. Work on task.
 9. Repeat 7-8 until feature is complete.
 10. Once feature is finished, create JAR file.
-11. Update and test Docker configuration with Travis.
+11. Update and test Docker configuration with GitHub Actions.
 12. Update feature branch with `develop` to ensure feature is up-to-date.
 13. Check feature branch still works.
 14. Merge feature branch into `develop`.

@@ -26,7 +26,6 @@ We covered use case diagrams in the last lab.  Essentially, use case diagrams tr
 Activity diagrams you are likely familiar with, although the name might be unusual.  An activity diagram is just a flow chart:
 
 <p><a href="https://commons.wikimedia.org/wiki/File:Activity_conducting.svg#/media/File:Activity_conducting.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Activity_conducting.svg/1200px-Activity_conducting.svg.png" alt="Activity conducting.svg"></a><br>By ​<a href="https://en.wikipedia.org/wiki/Main_Page" class="extiw" title="en:Main Page">spanish Wikipedia</a> user <a href="https://en.wikipedia.org/wiki/User:Gwaur" class="extiw" title="en:User:Gwaur">Gwaur</a>, <a href="http://creativecommons.org/licenses/by-sa/3.0/" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=4812400">Link</a></p>
-
 Whereas the use case diagram captures functionality required from a user story point of view, the activity diagram allows steps to be defined in the process.  This comes closer to actual code to be written, and can be refined to the point of actual code statements if need be, although that is very low-level.  As a learner, activity diagrams can be very useful to help you map out how to code at a low-level.  As you become more experienced, activity diagrams become more abstract and a communication tool between stakeholders.
 
 ### Class Diagram
@@ -38,7 +37,6 @@ Is the focus of the main part of the lab so we will cover this later.
 Sequence diagrams map the communication between components (objects) as a system executes, and focuses on the method calls between objects.  For example:
 
 <p><a href="https://commons.wikimedia.org/wiki/File:CheckEmail.svg#/media/File:CheckEmail.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/CheckEmail.svg/1200px-CheckEmail.svg.png" alt="CheckEmail.svg"></a><br>By Coupling_loss_graph.svg - File:CheckEmail.png, <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=20544977">Link</a></p>
-
 Here, an object of type `Computer` has a method `checkEmail` called on it.  The `Computer` then calls methods on a `Server` object such as `newEmail`.  The point of the sequence diagram is that it captures actual object interactions.  The sequences themselves are likely already captured in the activity diagram, but now we are using concrete object specifications to bring our solution to code.
 
 ## UML Class Diagram Overview
@@ -46,7 +44,6 @@ Here, an object of type `Computer` has a method `checkEmail` called on it.  The 
 Of the four diagrams discussed, class diagrams are the most complex.  Here is a simple example:
 
 <p><a href="https://commons.wikimedia.org/wiki/File:KP-UML-Generalization-20060325.svg#/media/File:KP-UML-Generalization-20060325.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/KP-UML-Generalization-20060325.svg/1200px-KP-UML-Generalization-20060325.svg.png" alt="KP-UML-Generalization-20060325.svg"></a><br>By No machine-readable author provided. <a href="//commons.wikimedia.org/w/index.php?title=User:Noodlez84&amp;action=edit&amp;redlink=1" class="new" title="User:Noodlez84 (page does not exist)">Noodlez84</a> assumed (based on copyright claims). - No machine-readable source provided. Own work assumed (based on copyright claims)., Public Domain, <a href="https://commons.wikimedia.org/w/index.php?curid=659677">Link</a></p>
-
 A class diagram attempts to capture the details of a class in a diagram.  There are quite a few details, including:
 
 - the class or interface.
@@ -69,7 +66,9 @@ Each of these points requires some form of visual metaphor:
 
 There are several different relationship types between classes.  The point of mapping them out is to understand how classes are related so when we make changes we know the likely impact.  Below is the common relationship types:
 
-<p><a href="https://commons.wikimedia.org/wiki/File:Uml_class_relation_arrows_en.svg.png#/media/File:Uml_class_relation_arrows_en.svg.png"><img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Uml_class_relation_arrows_en.svg.png" alt="Uml class relation arrows en.svg.png"></a><br>By Yanpas - <a class="external free" href="https://commons.wikimedia.org/wiki/File:Uml_classes_en.svg">https://commons.wikimedia.org/wiki/File:Uml_classes_en.svg</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0" title="Creative Commons Attribution-Share Alike 4.0">CC BY-SA 4.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=63418088">Link</a></p>
+![Class Relationships](img/relationships.png)
+
+
 
 - *association* is the most generic relationship type.
 - *inheritance* means that a class is a specialisation of another class.
