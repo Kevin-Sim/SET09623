@@ -1,195 +1,212 @@
 # Lab 08: Integration Testing
 
-This lab will build further automated tests for our project, focusing on integration testing as supported via Travis CI.  Most of the work in this lab will be around writing Travis configuration files, although we will do some work in our Java code.
+In this lab we will build further automated tests for our project, focusing on integration testing. We will modify our App to allow local debugging to save time constantly building docker containers and add Integration testing to out GitHub Actions pipeline.
 
 ## Behavioural Objectives
 
-- [ ] **Create** *multi-stage builds with Travis CI.*
+- [ ] **Modify** *our App to allow local connections to the database for faster debugging.*
 - [ ] **Create** *integration tests.*
 - [ ] **Use code coverage** from *version control.*
 
 ## Updating Project
 
-We have some tidying up in our existing project to make our life easier.  We will modify the `pom.xml` file to use up-to-date versions of our dependencies, 
+We have some tidying up in our existing project to make our life easier.  We will modify the `pom.xml` file to use a more up-to-date versions of our mysql dependencies that allows local connections. 
 
 ### Updating Maven `pom.xml` File
 
-When we first added dependencies to our Maven configuration we specified hard version numbers as follows:
+Update the dependencies section of your `pom.xml` to use version 8.0.18 of the mysql driver:
 
 ```xml
-<dependencies>
-    <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>5.1.44</version>
-    </dependency>
-
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.1.0</version>
-        <scope>test</scope>
-    </dependency>
-</dependencies>
-```
-
-A better strategy is to let Maven pull the latest version of our dependencies.  We do this using the notation `[x.y, )`.  This tells Maven to use version `x.y` or later.  Thus, our `pom.xml` dependencies become:
-
-```xml
-<dependencies>
-    <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>[8.0,)</version>
-    </dependency>
-
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>[5.1.0,)</version>
-        <scope>test</scope>
-    </dependency>
-</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.18</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.1.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 ```
 
 ### Updating `App.java`
 
-We will also modify our `App.java` file so we can set the hostname for the database.  This is will become important later.  We will also update the MySQL driver used in Java.
+We will also modify our `App.java` file to use the latest mysql connector and to allow the hostname and delay for the database to be set programmatically.  This will allow us to debug our code locally much more quickly than having to build docker containers each time a change is made.
 
 #### Updating `connect`
 
 Below is our updated `connect` method.  The updated lines are:
 
-- The method definition adds a `location` parameter.
+- The method definition adds `location` and `delay` parameters.
 - `Class.forName` which uses the most up-to-date MySQL driver.
 - `Driver.getConnection` uses the `location`, and also updates the parameters to use `allowPublicKeyRetrieval=true` as we are using a more up-to-date version of MySQL.
 
 ```java
-public void connect(String location)
-{
-    try
-    {
-        // Load Database driver
-        Class.forName("com.mysql.cj.jdbc.Driver");
-    }
-    catch (ClassNotFoundException e)
-    {
-        System.out.println("Could not load SQL driver");
-        System.exit(-1);
-    }
+        public void connect(String location, int delay) {
+        try {
+            // Load Database driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.out.println("Could not load SQL driver");
+            System.exit(-1);
+        }
 
-    int retries = 10;
-    for (int i = 0; i < retries; ++i)
-    {
-        System.out.println("Connecting to database...");
-        try
-        {
-            // Wait a bit for db to start
-            Thread.sleep(30000);
-            // Connect to database
-            con = DriverManager.getConnection("jdbc:mysql://" + location + "/employees?allowPublicKeyRetrieval=true&useSSL=false", "root", "example");
-            System.out.println("Successfully connected");
-            break;
-        }
-        catch (SQLException sqle)
-        {
-            System.out.println("Failed to connect to database attempt " + Integer.toString(i));
-            System.out.println(sqle.getMessage());
-        }
-        catch (InterruptedException ie)
-        {
-            System.out.println("Thread interrupted? Should not happen.");
+        int retries = 10;
+        for (int i = 0; i < retries; ++i) {
+            System.out.println("Connecting to database...");
+            try {
+                // Wait a bit for db to start
+                Thread.sleep(delay);
+                // Connect to database              
+                con = DriverManager.getConnection("jdbc:mysql://" + location 
+                        + "/employees?allowPublicKeyRetrieval=true&useSSL=false", 
+                              "root", "example");
+                System.out.println("Successfully connected");
+                break;
+            } catch (SQLException sqle) {
+                System.out.println("Failed to connect to database attempt " +                                  Integer.toString(i));
+                System.out.println(sqle.getMessage());
+            } catch (InterruptedException ie) {
+                System.out.println("Thread interrupted? Should not happen.");
+            }
         }
     }
-}
 ```
 
-### Updating `main`
 
-Our `main` must now update its call to `App.connect` to provide the hostname.  We use `localhost:33060` below.
+#### Updating `main`
+
+Modify the main method to use command line parameters, if supplied, or to default to localhost.
 
 ```java
-public static void main(String[] args)
-{
-    // Create new Application
-    App a = nesw App();
+      public static void main(String[] args) {
+        // Create new Application and connect to database
+        App a = new App();
 
-    // Connect to database
-    a.connect("localhost:33060");
+        if(args.length < 1){
+            a.connect("localhost:33060", 30000);
+        }else{
+            a.connect(args[0], Integer.parseInt(args[1]));
+        }
 
-    Department dept = a.getDepartment("Sales");
-    ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
+        Department dept = a.getDepartment("Development");
+        ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
 
-    // Print salary report
-    a.printSalaries(employees);
 
-    // Disconnect from database
-    a.disconnect();
-}
+        // Print salary report
+        a.printSalaries(employees);
+
+        // Disconnect from database
+        a.disconnect();
+    }
+```
+#### Updating `pom.xml` to Set JAR Filename
+
+At the start of the project we built a JAR file with the version number and `jar-with-dependencies` added to the name.  This has slowly become problematic with the number of files where our version number is provided.  Therefore, we will update the `pom.xml` file to produce a JAR file called `seMethods`.
+
+The section we have to update is in the `<build><plugins>` section for the `maven-assembly-plugin`.  The updated version is below:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-assembly-plugin</artifactId>
+    <version>3.3.0</version>
+    <configuration>
+        <finalName>seMethods</finalName>
+        <archive>
+            <manifest>
+                <mainClass>com.napier.sem.App</mainClass>
+            </manifest>
+        </archive>
+        <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+        </descriptorRefs>
+        <appendAssemblyId>false</appendAssemblyId>
+    </configuration>
+    <executions>
+        <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+                <goal>single</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
 ```
 
-With these in place, **commit and push your changes to GitHub.**
+We have set `<finalName>` and stated we do not want the ID attached (`<appendAssemblyId>` is set to `false`).  Our Maven build will now produce a file called `seMethods.jar`.
+
+#### Updating `Dockerfile` for Application
+
+Now we need to update the `Dockerfile` for the application to use the new JAR file name, and to provide the correct location for the database.  The updated `Dockerfile` is below.
+
+```dockerfile
+FROM openjdk:latest
+COPY ./target/seMethods.jar /tmp
+WORKDIR /tmp
+ENTRYPOINT ["java", "-jar", "seMethods.jar", "db:3306", "30000"]
+```
+
+
 
 ## Enabling Local Debugging
 
-We are now moving onto a stage where constantly using Docker to run our application locally is taking too much time.  Therefore, we are going to run a local version of the *Employees* database container that we can debug against.
+Make sure you have exposed the docker database port 
 
-In IntelliJ, via the **Docker View**, **right-click** on **Images** and select **Pull Image**.  This will open the *Pull Image Window*:
-
-![Pull Image Window](img/intellij-pull-image.png)
-
-The *Employees Database* has been provided at `kevinchalmers/employees`.  **Enter this as the Repository Name** and **click OK**.  The image will be pulled.  Once it is, **right-click** on the **image** in the **Docker view** and **select Create Container**.  This will open the **Create Container Window**.  
-
-![Create Container Window](img/intellij-create-container.png)
-
-We need to provide the following **Run/Command options**: `-e MYSQL_ROOT_PASSWORD=example -p 33060:3306`.  Then **click Run**.  This will start-up the container.  You can now run your application and connect to the locally running database for debugging your application.
-
-Another Docker container - `kevinchalmers/world` - has been provided for the coursework.  You should be able to run it in the same manner as above.
-
-## Adding Stages to Travis
-
-Now we have local debugging in place, we can start upgrading our build to more effectively use Travis CI.  In particular, we will look at build steps.  First, we will update our main `.travis.yml` file.
-
-### A New `.travis.yml` File
-
-Below is our new `.travis.yml` file.  **Update your file to match and then push to GitHub**.  Then **login to Travis** to check it is working.
+Your `docker-compose.yml` file should be:
 
 ```yml
-language: java
-
-sudo: false
-
-addons:
-  hosts:
-    - db
-
+version: '3'
 services:
-  - docker
+  # Application Dockerfile is in same folder which is .
+  app:
+    build: .
 
-install:
-  - docker build -t database db/.
-  - docker run --rm -d -e MYSQL_ROOT_PASSWORD=example -p 33060:3306 database
-  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  # db is is db folder
+  db:
+    build: db/.
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - "33060:3306"
 
-before_script:
-  - mvn clean
-
-script:
-  - mvn test -Dtest=com.napier.sem.AppTest
 ```
 
-We have changed most of the file, so let us look at what we have done in each section:
+The last line tells docker to make port 3306 available on our local machine on port 33060
 
-- `sudo: false` tells Travis we do not need `sudo` (super-user) access in this script.  This will speed-up our builds.
-- `addons: hosts:` tells Travis to set a local hostname.  We use `db`.  This allows us to connect to our database container using the name `db`.  We could have just used `localhost` but this is closer to reality which is the point of integration testing.
-- `services:` tells Travis which services we want.  We add `docker` to ensure it is installed.
-- `install:` provides an installation script.  This is run before any job.  Our install script will build the database container, start it the necessary parameters, and do an install build via Maven.  The `mvn install` syntax used is the same called [normally by Travis](https://docs.travis-ci.com/user/languages/java/#projects-using-maven).
-- `before_script:` is a script that is run before any script part of a job.
-- `script:` is our build script, *for the moment*.  We run `mvn test` providing the name of the test file we want to run.  This is our unit test file.
+Delete your old containers and images and restart the database from the docker compose file using the arrow at line 8 below.
+
+
+![Start Database](img/dbstart.png)
+
+You can leave the database running to save having to rebuild each time you want to connect. 
+
+When the database is running and ready for connections the log from the docker container should show `ready for connections`:
+
+![Database Ready](img/dbready.png)
+
+
+You should now be able to run the App locally without having to package and build docker images
+
+Just start the App directly  using the arrow next to the main method.
+
+![Start Locally](img/startlocal.png)
+
+The new version of App should work locally either running directly or by starting from docker-compose and on GitHub Actions without any modification.
+
+Test that all three scenarios are working
+
+- Locally as described above by running the App directly
+- Locally in docker using docker-compose to start the App (remember to delete target directory, old containers and images, repackage with maven, recreate and start App image using docker-compose )
+- Remotely on GitHub Actions
 
 We want to separate our tests into different files as we will have different types of tests.  Unit tests and integration tests are different, and we want to manage them as such.
 
-### Adding Travis Job Stages
+### Adding GitHub Actions Job Stages
 
 From the [Continuous Integration lecture](../../lectures/lecture15) we defined the following steps in a basic build script:
 
@@ -200,114 +217,60 @@ From the [Continuous Integration lecture](../../lectures/lecture15) we defined t
 5. Run inspections.
 6. Deploy software.
 
-We have define *Clean* in `before_script`.  Compilation is either done via the install script, or we will package our code.  Database integration has also been setup in the install script.  Therefore, we need to define steps 4-6.  Inspections we won't return to until the end of the module.  Therefore, we will update our Travis to the following:
+We will update our GitHub Actions workflow to separate the different stages
 
 ```yml
-language: java
-
-sudo: false
-
-addons:
-  hosts:
-    - db
-
-services:
-  - docker
-
-install:
-  - docker build -t database db/.
-  - docker run --rm -d -e MYSQL_ROOT_PASSWORD=example -p 33060:3306 database
-  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-
-before_script:
-  - mvn clean
+name: A workflow for my Hello World App
+on: push
 
 jobs:
-  include:
-    - stage: unit tests
-      install: skip
-      jdk: oraclejdk11
-      script: mvn test -Dtest=com.napier.sem.AppTest
-    - stage: integration tests
-      jdk: oraclejdk11
-      script: echo "Integration Tests"
-    - stage: deploy
-      install: skip
-      jdk: oraclejdk11
-      script: echo "Deploy"
+  UnitTests:
+    name: Unit Tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Unit Tests
+        run: mvn -Dtest=com.napier.sem.AppTest test
+
+  build:
+    name: Build and Start Using docker-compose
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Package and Run docker compose
+        run: |
+          mvn package -DskipTests
+          docker-compose up --abort-on-container-exit
+
 ```
 
-We have added a new item: `jobs`.  This allows us to define build stages under a `include` item.  Our stages have the following items:
+We have separated our tasks into different jobs. This allows us to define build stages for more control. It also allows the different jobs to run concurrently on GitHub Actions speeding up the process. **Commit** and **push** this change.  If successful then you should see the different stages on GitHub Actions as shown below.
 
-- `stage` is the name we give to the stage.  We have defined `unit tests`, `integration tests`, and `deploy` stages.
-- `install` can be set to `skip` if we do **not** want the install script to run for this stage.  Notice we do not install during unit testing and deploying.  This will speed up these stages.
-- `jdk` allows us to set the Java version to use in the build step.  Here we use `oraclejdk11`.
-- `script` is what to run as part of the build stage.
-
-Notice that our `integration tests` and `deploy` stage just `echo` (print) a message at the moment.  This is just to do something as part of the stage.  **Commit** and **push** this change.  Then log into Travis and you should see a window with the different stages highlighted by Travis.
-
-![Travis CI with Build Stages](img/travis-build-stages.png)
-
-### Setting Stage Order
-
-We can also explicitly set the build stage order in a `stages` item.  Below is an updated `.travis.yml` file.
-
-```yml
-language: java
-
-sudo: false
-
-addons:
-  hosts:
-    - db
-
-services:
-  - docker
-
-install:
-  - docker build -t database db/.
-  - docker run --rm -d -e MYSQL_ROOT_PASSWORD=example -p 33060:3306 database
-  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-
-before_script:
-  - mvn clean
-
-jobs:
-  include:
-    - stage: unit tests
-      install: skip
-      jdk: oraclejdk11
-      script: mvn test -Dtest=com.napier.sem.AppTest
-    - stage: integration tests
-      jdk: oraclejdk11
-      script: echo "Integration Tests"
-    - stage: deploy
-      install: skip
-      jdk: oraclejdk11
-      script: echo "Deploy"
-
-stages:
-  - unit tests
-  - integration tests
-  - name: deploy
-    if: branch = master
-```
-
-The order of our stages are:
-
-- Unit testing.
-- Integration testing.
-- Deployment.
-
-Notice we also add another item to the `deploy` stage: `if: branch = master`.  This means the `deploy` stage will only occur when we push to the `master` branch.  Again, **commit and push** these changes, and **check Travis CI** to see that it works.
+![Workflow Stages](img/workflowstages.png)
 
 ## Adding Integration Tests
 
-We are now ready to write integration tests.  These are tests against our database, and therefore we need to be connected to the database.  Our tests will be written in the same manner as unit tests, but require a few more tests.
+Remember that Unit Tests are check the integrity of the smallest parts of our program. These do not need a connection to the database.  We are now ready to write integration tests.  These are tests against our database, and therefore we need to be connected.  Our tests will be written in the same manner as unit tests, but require a bit more configuration.
 
 ### Adding Integration Test File
 
-**Add a new Java file to the test folder called `AppIntegrationTest.java`**.  The code for the file is below.
+Add a new Java file to the test folder called `AppIntegrationTest.java`.  The code for the file is below.
 
 ```java
 package com.napier.sem;
@@ -328,7 +291,8 @@ public class AppIntegrationTest
     static void init()
     {
         app = new App();
-        app.connect("localhost:33060");
+        app.connect("localhost:33060", 30000);
+        
     }
 
     @Test
@@ -342,178 +306,79 @@ public class AppIntegrationTest
 }
 ```
 
-We are testing the `getEmployee` method to see if it returns a correct answer.  A random entry to the database has been used.  With this in place, we can update our Travis build file.
+We are testing the `getEmployee` method to see if it returns a correct answer.  A random entry to the database has been used.  With this in place, we can update our GitHub Actions workflow.
 
-### Updating `.travis.yml`
+### Update GitHub Actions
 
-All we need to do now is update the `.travis.yml` file to run our integration tests:
-
-```yml
-language: java
-
-sudo: false
-
-addons:
-  hosts:
-    - db
-
-services:
-  - docker
-
-install:
-  - docker build -t database db/.
-  - docker run --rm -d -e MYSQL_ROOT_PASSWORD=example -p 33060:3306 database
-  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-
-before_script:
-  - mvn clean
-
-jobs:
-  include:
-    - stage: unit tests
-      install: skip
-      jdk: oraclejdk11
-      script: mvn test -Dtest=com.napier.sem.AppTest
-    - stage: integration tests
-      jdk: oraclejdk11
-      script: mvn test -Dtest=com.napier.sem.AppIntegrationTest
-    - stage: deploy
-      install: skip
-      jdk: oraclejdk11
-      script: echo "Deploy"
-
-stages:
-  - unit tests
-  - integration tests
-  - name: deploy
-    if: branch = master
-```
-
-We have updated the `script` item of the `integration tests` stage to invoke `mvn test` on the `AppIntegrationTest` file.  **Commit and push** your changes and check that everything still builds on Travis CI.
-
-### Adding *Mock* Deploy Stage
-
-We will also provide a *mock* deploy stage to our build configuration.  This will just call our previous `docker compose` command to ensure it is still working.  To do this we need to perform the following steps:
-
-- Update `main` to use command line arguments.  This will allow us to be versatile when testing.
-- Update `pom.xml` to allow simpler JAR file naming.
-- Update the application `Dockerfile` to use the new JAR file name and command line arguments.
-- Update `.travis.yml` to call `docker compose` during the `deploy` stage.
-
-#### Updating `main` to Use Command Line Arguments
-
-In our `main` we want to take a command line argument to determine where to connect to for our database.  We default to `localhost:3306` if no parameter is provided.  Below is the updated `main`:
-
-```java
-public static void main(String[] args)
-{
-    // Create new Application
-    App a = new App();
-
-    // Connect to database
-    if (args.length < 1)
-    {
-        a.connect("localhost:3306");
-    }
-    else
-    {
-        a.connect(args[0]);
-    }
-
-    Department dept = a.getDepartment("Sales");
-    ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
-
-    // Print salary report
-    a.printSalaries(employees);
-
-    // Disconnect from database
-    a.disconnect();
-}
-```
-
-#### Updating `pom.xml` to Set JAR Filename
-
-At the start of the project we built a JAR file with the version number and `jar-with-dependencies` added to the name.  This has slowly become problematic with the number of files where our version number is provided.  Therefore, we will update the `pom.xml` file to produce a JAR file called `seMethods`.
-
-The section we have to update is in the `<build><plugins><plugin>` section for `maven-assembly-plugin`.  The updated version is below:
-
-```xml
-<artifactId>maven-assembly-plugin</artifactId>
-<configuration>
-    <finalName>seMethods</finalName>
-    <archive>
-        <manifest>
-            <mainClass>com.napier.sem.App</mainClass>
-        </manifest>
-    </archive>
-    <descriptorRefs>
-        <descriptorRef>jar-with-dependencies</descriptorRef>
-    </descriptorRefs>
-    <appendAssemblyId>false</appendAssemblyId>
-</configuration>
-```
-
-We have set `<finalName>` and stated we do not want the ID attached (`<appendAssemblyId>` is set to `false`).  Our Maven build will now produce a file called `seMethods.jar`.
-
-#### Updating `Dockerfile` for Application
-
-Now we need to update the `Dockerfile` for the application to use the new JAR file name, and to provide the correct location for the database.  The updated `Dockerfile` is below.
-
-```dockerfile
-FROM openjdk:latest
-COPY ./target/seMethods.jar /tmp
-WORKDIR /tmp
-ENTRYPOINT ["java", "-jar", "seMethods.jar", "db:3306"]
-```
-
-#### Updating Travis Again
-
-Finally, we need to update our `.travis.yml` file so we package our application and launch via `docker compose`.  The updated file is below.  The `script` item in the `deploy` stage is what we have changed.
+All we need to do now is update the GitHub Actions `main.yml` file to run our integration tests:
 
 ```yml
-language: java
-
-sudo: false
-
-addons:
-  hosts:
-    - db
-
-services:
-  - docker
-
-install:
-  - docker build -t database db/.
-  - docker run --rm -d -e MYSQL_ROOT_PASSWORD=example -p 33060:3306 database
-  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-
-before_script:
-  - mvn clean
-
+name: A workflow for my Hello World App
+on:
+  push:
+    branches:
+      - master
+      - lab08
 jobs:
-  include:
-    - stage: unit tests
-      install: skip
-      jdk: oraclejdk11
-      script: mvn test -Dtest=com.napier.sem.AppTest
-    - stage: integration tests
-      jdk: oraclejdk11
-      script: mvn test -Dtest=com.napier.sem.AppIntegrationTest
-    - stage: deploy
-      install: skip
-      jdk: oraclejdk11
-      script:
-        - mvn package -DskipTests=true -Dmaven.javadoc.skip=true
-        - docker-compose up --abort-on-container-exit
+  UnitTests:
+    name: Unit Tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Unit Tests
+        run: mvn -Dtest=com.napier.sem.AppTest test
 
-stages:
-  - unit tests
-  - integration tests
-  - name: deploy
-    if: branch = master
+  IntegrationTests:
+    name: Integration Tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Integration Tests
+        run: |
+          docker build -t database ./db 
+          docker run --name employees -dp 33060:3306 database
+          mvn -Dtest=com.napier.sem.AppIntegrationTest test
+          docker stop employees
+          docker rm employees
+          docker image rm database                    
+
+  build:
+    name: Build and Start Using docker-compose
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Package and Run docker compose
+        run: |
+          mvn package -DskipTests
+          docker-compose up --abort-on-container-exit
+
 ```
 
-Now, **commit and push the changes** and check that everything works on Travis CI.
+We have added an `integration tests` stage to invoke `mvn test` on the `AppIntegrationTest` file.  **Commit and push** your changes and check that everything still works on GitHub Actions
 
 ## Exercise: Add Integration Tests
 
@@ -525,11 +390,11 @@ Last week we looked at using IntelliJ to provide a code coverage report.  This i
 
 ### Creating an Account with Codecov
 
-We are going to use a service called [Codecov](https://codecov.io/).  First, you need to go to there website and signup via your GitHub account.  The process from then should be fairly straightforward, but if you have any problems ask.
+We are going to use a service called [Codecov](https://codecov.io/).  First, you need to go to their website and signup via your GitHub account.  The process from then should be fairly straightforward, but if you have any problems ask.
 
 ### Updating `pom.xml` to Provide Code Coverage
 
-We need Maven to generate reports for us.  There are different plugins that can do this for us, and we will use the Jacoco one.  Add the following to the `plugins` section of the `pom.xml` file:
+We need Maven to generate reports for us.  There are different plugins that can do this for us, and we will use the jacoco one.  Add the following to the `plugins` section of the `pom.xml` file:
 
 ```xml
 <plugin>
@@ -555,57 +420,96 @@ We need Maven to generate reports for us.  There are different plugins that can 
 
 That is all we have to do in our Maven file.  Everything else is automated.
 
-### Updating `.travis.yml` to Upload Code Coverage
+### Updating `.main.yml` to Upload Code Coverage
 
-We will use the `after_success` step to upload the reports to Codecov.  This step takes place after the successful completion of a build stage.  Our updated `.travis.yml` file is below:
+We will add another action to the Integration Test stage of our GitHub Actions `main.yml` file to upload the coverage reports created during the maven test stage to codecov. 
 
 ```yml
-language: java
-
-sudo: false
-
-addons:
-  hosts:
-    - db
-
-services:
-  - docker
-
-install:
-  - docker build -t database db/.
-  - docker run --rm -d -e MYSQL_ROOT_PASSWORD=example -p 33060:3306 database
-  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-
-before_script:
-  - mvn clean
-
+name: A workflow for my Hello World App
+on:
+  push:
+    branches:
+      - master
+      - lab08
 jobs:
-  include:
-    - stage: unit tests
-      install: skip
-      jdk: oraclejdk11
-      script: mvn test -Dtest=com.napier.sem.AppTest
-    - stage: integration tests
-      jdk: oraclejdk11
-      script: mvn test -Dtest=com.napier.sem.AppIntegrationTest
-    - stage: deploy
-      install: skip
-      jdk: oraclejdk11
-      script:
-        - mvn package -DskipTests=true -Dmaven.javadoc.skip=true
-        - docker-compose up --abort-on-container-exit
+  UnitTests:
+    name: Unit Tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Unit Tests
+        run: mvn -Dtest=com.napier.sem.AppTest test
 
-stages:
-  - unit tests
-  - integration tests
-  - name: deploy
-    if: branch = master
+  IntegrationTests:
+    name: Integration Tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Integration Tests and CodeCov
+        run: |
+          docker build -t database ./db 
+          docker run --name employees -dp 33060:3306 database
+          mvn -Dtest=com.napier.sem.AppIntegrationTest test          
+          docker stop employees
+          docker rm employees
+          docker image rm database                    
+      - name: CodeCov
+        uses: codecov/codecov-action@v2
+        with:
+          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos 
+          directory: ./target/site/jacoco
+          flags: Integration Tests # optional
+          verbose: true # optional (default = false)
+  build:
+    name: Build and Start Using docker-compose
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Package and Run docker compose
+        run: |
+          mvn package -DskipTests
+          docker-compose up --abort-on-container-exit
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
 ```
 
-The two new lines are at the end.  Now **commit and push** these changes.  Travis should undertake the build process, and once one stage is complete you can view it at `https://codecov.io/gh/<github-username>/<repo>`.  For example, `https://codecov.io/gh/kevin-chalmers/sem`.
+The jacoco maven plugin creates html reports in the `./target/site/jacoco` folder. The new action shown below uploads this folder to `https://codecov.io`
+
+```yml
+    - name: CodeCov
+        uses: codecov/codecov-action@v2
+        with:
+          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos 
+          directory: ./target/site/jacoco
+          flags: Integration Tests # optional
+          verbose: true # optional (default = false)
+```
+
+
+Now **commit and push** these changes.  GitHub Actions should undertake the build process, and once one stage is complete you can view it at `https://codecov.io/gh/<github-username>/<repo>`.  For example, `https://codecov.io/gh/kevin-sim/sem_employees`.
 
 ![Code Coverage Report](img/codecov-overview.png)
 
@@ -668,7 +572,7 @@ public void addEmployee(Employee emp)
 }
 ```
 
-And the test should pass.  **Commit and push** and check with Travis.
+And the test should pass.  **Commit and push** and check with GitHub Actions.
 
 ## Cleanup
 

@@ -58,7 +58,7 @@ Unit testing is now a **fundamental** part of software development and you shoul
 
 ## Getting Started with Unit Testing in Maven and IntelliJ
 
-Maven and IntelliJ both support unit testing as part of their workflows.  This means we can add the configuration for unit testing to our Maven file and IntelliJ will automatically understand what is happening.  It also allows us to run our unit tests via Travis CI later.
+Maven and IntelliJ both support unit testing as part of their workflows.  This means we can add the configuration for unit testing to our Maven file and IntelliJ will automatically understand what is happening.  It also allows us to run our unit tests via GitHub Actions later.
 
 ### Maven Configuration Code for JUnit
 
@@ -486,6 +486,67 @@ Our next feature is:
 
 We have already implemented this feature, so move it to done in your Zube board.
 
+## Update GitHub Actions for Unit Tests
+
+We can separate the Unit Tests from our application in GitHub Actions.
+
+Change your workflow main.yml to the following
+
+```yml
+name: A workflow for my Hello World App
+on: push
+
+jobs:
+  build:
+    name: Hello world action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Unit Tests
+        run: mvn -Dtest=com.napier.sem.AppTest test
+      - name: Package and Run docker compose
+        run: |
+          mvn package -DskipTests
+          docker-compose up --abort-on-container-exit
+
+
+```
+
+There are a few things to note here.
+
+We have added a stage called Unit Tests that runs a **specific** Test Class using the parameter 
+
+`-Dtest=com.napier.sem.AppTest` to specify the test class
+
+We have combined stages into a new stage called *Package and Run docker compose* that uses multiple run commands (The pipe **|** following the run: declaration allows multiple lines to follow)
+
+There are two commands:
+
+ ```run: |
+          mvn package -DskipTests
+          docker-compose up --abort-on-container-exit
+ ```
+ The first command packages our jar without running the Unit Tests (In maven all commands above a stage are executed so mvn package runs clean, validate compile and test before packaging)
+
+![Maven Stages](img/mvn-stages.png)
+
+The second command runs our docker-compose file which requires the packaged jar with dependencies.
+
 ## Cleanup
 
-Now clean-up as normal, ensuring you commit everything to GitHub.
+Now clean-up as normal, ensuring you commit everything to GitHub, checking the our new GitHub Actions are successful. If they are you should see output similar to the following.
+
+### Unit Tests
+![Unit Test](img/testSuccess.png)
+
+### Package and docker-compose
+![Unit Test](img/packageSuccess.png)
+
