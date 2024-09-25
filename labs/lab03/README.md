@@ -327,7 +327,7 @@ jobs:
       - name: Build with Maven
         run: mvn package
       - name: Run docker compose
-        run: docker-compose up --abort-on-container-exit
+        run: docker compose up --abort-on-container-exit
 
 
 ```
