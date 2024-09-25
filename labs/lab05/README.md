@@ -1,211 +1,250 @@
-# Lab 05: Use Cases and Use Case Diagrams
+# Lab 05: UML
 
-In this lab we will extend our initial user stories into fuller use cases, trying to capture the detail of the work we require to complete the new HR System.  We will also look at **Use Case Diagrams** to visually define our use cases and their relationship.
+In this lab we will continue our work on diagramming by examining UML briefly, and class diagrams in detail.  UML (the Unified Modelling Language) is designed to visualise software.  As software has several ways of being viewed, UML likewise provides a number of diagram types.  We will only mention four here but the [Wikipedia page on UML](https://en.wikipedia.org/wiki/Unified_Modeling_Language) points to further information.
 
 ## Behavioural Objectives
 
-- [ ] **Define use cases** using *Cockburn's Use Case Template*.
-- [ ] **Define use case diagrams** using *Diagrams.net plugin*.
+- [ ] **Define** the *two main types of UML diagram*.
+- [ ] **Describe** the *elements of a UML class diagram*.
+- [ ] **Add code** to an *application via a class diagram*.
 
-## Our Current User Stories
+## UML Diagram Types
 
-In [Lab 03](../lab03) we defined our eight user stories from our vision statement:
+UML diagrams can be divided into two broad types:
 
-1. As an *HR advisor* I want *to produce a report on the salary of all employees* so that *I can support financial reporting of the organisation.*
-2. As an *HR advisor* I want *to produce a report on the salary of employees in a department* so that *I can support financial reporting of the organisation.*
-3. As an *department manager* I want *to produce a report on the salary of employees in my department* so that *I can support financial reporting for my department.*
-4. As an *HR advisor* I want *to produce a report on the salary of employees of a given role* so that *I can support financial reporting of the organisation.*
-5. As an *HR advisor* I want *to add a new employee's details* so that *I can ensure the new employee is paid.*
-6. As an *HR advisor* I want *to view and employee's details* so that *the employee's promotion request can be supported.*
-7. As an *HR advisor* I want *to update an employee's details* so that *employee's details are kept up-to-date.*
-8. As an *HR advisor* I want *to delete an employee's details* so that *the company is compliant with data retention legislation.*
+- **Behavioural diagrams**: those which describe the behaviour of the system as it executes.
+- **Structural diagrams**: those which describe the static structure of the system.
 
-So far, we have implemented user story 1 and 6.  As an exercise, you are expected to complete **all** the use cases defined above.  This lab will only provide one example: user story 4.  However, you should be able to complete the use case for 1 and 6 from our previous work, and we will be reviewing the other use cases through the rest of the lab series.
+The four most common diagram types are **use case diagrams**, **activity diagrams**, **class diagrams**, and **sequence diagrams**.  Class diagrams are a *structural diagram* whereas the other three are *behavioural diagrams*.
 
-## What is a Use Case?
+### Use Case Diagram
 
-From [Wikipedia](https://en.wikipedia.org/wiki/Use_case):
+We covered use case diagrams in the last lab.  Essentially, use case diagrams try to capture the abstract behaviour of a system at specification time.  They are a useful tool for communicating with stakeholders or providing a high-level overview of specification behaviour.  However, they tend to have little direct mapping to actual code developed.
 
-> In software and systems engineering, a use case is a **list of actions or event steps** typically **defining the interactions between a role (known in the Unified Modeling Language (UML) as an actor) and a system to achieve a goal**. 
+### Activity Diagram
 
-To simplify, a use case is:
+Activity diagrams you are likely familiar with, although the name might be unusual.  An activity diagram is just a flow chart:
 
-1. a list of actions/events;
-2. by an actor;
-3. interacting with a system;
-4. to achieve a goal.
+<p><a href="https://commons.wikimedia.org/wiki/File:Activity_conducting.svg#/media/File:Activity_conducting.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Activity_conducting.svg/1200px-Activity_conducting.svg.png" alt="Activity conducting.svg"></a><br>By ​<a href="https://en.wikipedia.org/wiki/Main_Page" class="extiw" title="en:Main Page">spanish Wikipedia</a> user <a href="https://en.wikipedia.org/wiki/User:Gwaur" class="extiw" title="en:User:Gwaur">Gwaur</a>, <a href="http://creativecommons.org/licenses/by-sa/3.0/" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=4812400">Link</a></p>
+Whereas the use case diagram captures functionality required from a user story point of view, the activity diagram allows steps to be defined in the process.  This comes closer to actual code to be written, and can be refined to the point of actual code statements if need be, although that is very low-level.  As a learner, activity diagrams can be very useful to help you map out how to code at a low-level.  As you become more experienced, activity diagrams become more abstract and a communication tool between stakeholders.
 
-Our user stories are a form of use case, sometimes referred to as a *casual* use case.  The user stories we have defined two elements directly and one indirectly of a use case.  For example, let us consider use case 4:
+### Class Diagram
 
-1. no list of actions defined.
-2. HR advisor (actor).
-3. interacts with HR system.
-4. to produce a report on the salary of employees of a given role (goal).
+Is the focus of the main part of the lab so we will cover this later.
 
-Our user stories are lacking in the following two areas:
+### Sequence Diagram
 
-- there is no list of actions.
-- the system interaction is opaque.
+Sequence diagrams map the communication between components (objects) as a system executes, and focuses on the method calls between objects.  For example:
 
-A fuller use case will allow us to address these two issues.  The list of actions we are normally defining as we build a feature.  Let us put some thought into the actions beforehand, but remember that **details can change!**  We are planning but not putting our plan in stone until we have finished a feature.
+<p><a href="https://commons.wikimedia.org/wiki/File:CheckEmail.svg#/media/File:CheckEmail.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/CheckEmail.svg/1200px-CheckEmail.svg.png" alt="CheckEmail.svg"></a><br>By Coupling_loss_graph.svg - File:CheckEmail.png, <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=20544977">Link</a></p>
+Here, an object of type `Computer` has a method `checkEmail` called on it.  The `Computer` then calls methods on a `Server` object such as `newEmail`.  The point of the sequence diagram is that it captures actual object interactions.  The sequences themselves are likely already captured in the activity diagram, but now we are using concrete object specifications to bring our solution to code.
 
-## Defining Use Cases for Our System
+## UML Class Diagram Overview
 
-[Lecture 10](../../lectures/lecture10) goes into more detail about use cases.  Here, we are going to cover the application of these ideas.  We are going to use a version of [Cockburn's Use Case Template](https://cis.bentley.edu/lwaguespack/CS360_Site/Downloads_files/Use%20Case%20Template%20%28Cockburn%29.pdf).  You can see a sample of [Use Case 4](use-case-4.md) using this template style.
+Of the four diagrams discussed, class diagrams are the most complex.  Here is a simple example:
 
-Cockburn's template contains the following sections of note:
+<p><a href="https://commons.wikimedia.org/wiki/File:KP-UML-Generalization-20060325.svg#/media/File:KP-UML-Generalization-20060325.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/KP-UML-Generalization-20060325.svg/1200px-KP-UML-Generalization-20060325.svg.png" alt="KP-UML-Generalization-20060325.svg"></a><br>By No machine-readable author provided. <a href="//commons.wikimedia.org/w/index.php?title=User:Noodlez84&amp;action=edit&amp;redlink=1" class="new" title="User:Noodlez84 (page does not exist)">Noodlez84</a> assumed (based on copyright claims). - No machine-readable source provided. Own work assumed (based on copyright claims)., Public Domain, <a href="https://commons.wikimedia.org/w/index.php?curid=659677">Link</a></p>
+A class diagram attempts to capture the details of a class in a diagram.  There are quite a few details, including:
 
-- **Goal in Context** - we will use our user story.
-- **Scope** - is discussed more in the lecture.  Scoping is an important consideration in any work you do.
-- **Level** - what level is the use case targeted at.  This is discussed further in the lecture.
-- **Preconditions** - what do we **expect** is true before the use case is executed.
-- **Success Condition** - what will happen on completion of the goal.
-- **Failed Condition** - what will happen on failure of the goal.
-- **Primary Actor** - the main actor of the use case.
-- **Trigger** - how is the use case started.
-- **Main Success Scenario** - what are the steps leading to success.
-- **Extensions** - what might happen at a given step to stop the use case.
-- **Sub-variations** - any other branches that a step can take?
-- **Schedule** - when does the use case need to be delivered.
+- the class or interface.
+- the name of the class.
+- relationships between classes (e.g., inheritance).
+- attributes of the class (i.e., class variables) including types.
+- methods of the class including parameter and return types.
+- the visibility levels of attributes and methods (i.e., *private*, *public*, *protected*).
 
-### Exercise: Define the Other Use Cases
+Each of these points requires some form of visual metaphor:
 
-First, create a new folder in your project called `use-cases`.  Copy the `use-case-4.md` file provided into this folder.
+- classes are represented by rectangles.
+- the name is put at the top of the rectangle.
+- relationships are shown via lines and arrows between rectangles.
+- attributes are listed in a section under the name with types noted after them.
+- methods are listed in a section under the attributes with types and parameters noted.
+- visibility is marked before an item: `+` for public, `-` for private, and `#` for protected.
 
-Your exercise is to complete the other seven use cases for the HR system.  Write these in Markdown (`.md` files).  IntelliJ comes with a default plugin to support Markdown.  If you are unfamiliar with Markdown, then there [are](https://www.markdowntutorial.com/) [several](https://guides.github.com/features/mastering-markdown/) [tutorials](https://www.markdownguide.org/getting-started/) [available](https://learnxinyminutes.com/docs/markdown/).  This is a good opportunity to work with your team.
+### Class Diagram Relationships
 
-## What is a Use Case Diagram?
+There are several different relationship types between classes.  The point of mapping them out is to understand how classes are related so when we make changes we know the likely impact.  Below is the common relationship types:
 
-Use cases can also be visually represented using a **Use Case Diagram**.  Typically seen as part of the **Unified Modelling Language** (UML) (see [Lab 6](../lab06) and [Lecture 11](../../lectures/lecture11)), use case diagrams allow us to see how use cases interact simply.  However, they do lack the detail required to fully implement and understand features, and therefore should be seen as a support tool for software development.  In particular, they can communicate with stakeholders quickly about how the engineers see the system working.
+<p><a href="https://commons.wikimedia.org/wiki/File:Uml_class_relation_arrows_en.svg.png#/media/File:Uml_class_relation_arrows_en.svg.png"><img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Uml_class_relation_arrows_en.svg.png" alt="Uml class relation arrows en.svg.png"></a><br>By Yanpas - <a class="external free" href="https://commons.wikimedia.org/wiki/File:Uml_classes_en.svg">https://commons.wikimedia.org/wiki/File:Uml_classes_en.svg</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0" title="Creative Commons Attribution-Share Alike 4.0">CC BY-SA 4.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=63418088">Link</a></p>
+- *association* is the most generic relationship type.
+- *inheritance* means that a class is a specialisation of another class.
+- *realization/implementation* is when a class implements an *interface*.
+- *dependency* is a special form of association where changes to a class means the dependant class will likely have to change.
+- *aggregation* is a special form of association denoting a *has-a* relationship.  This is not considered a strong relationship in so far as the class does not own the associated object.
+- *composition* is as aggregation but now the class **owns** the object.  When an instance of the owning object is destroyed so are its components.
 
-### Use Case Diagram Symbols
+[Unit 6a](../../units/unit06/unit06a.md) goes into more detail about relationship types.
 
-Use case diagrams are quite simple, requiring only stick men, arrows, and ellipsoids at the most basic level.  We will cover the common use case symbols from UML below.
+## Class Diagrams in IntelliJ
 
-#### Use Case
+UML support used to be a key feature in an IDE but the requirements have changed as industry practice has moved.  However, it is still common for an IDE to support class diagrams as they have a direct mapping to our code.  IntelliJ is no different in that regard.
 
-To illustrate a use case we use an ellipsoid with text as below:
+To use class diagrams in IntelliJ you need to ensure either:
 
-![Use Case](img/plantuml-usecase.png)
+- you have the Ultimate Edition installed; or
+- you install the UML Support plugin.
 
-#### Actor
+Once ready, to view a class diagram simply **right-click** on a class (e.g., `App`) in the **Project View** and select **Diagrams, Show Diagram**.  This should bring up the following view:
 
-Actors are represented by stick figures:
+![IntelliJ Diagram View](img/intellij-diagram.png)
 
-![Actor](img/plantuml-actor.png)
+OK not exciting so far - we just have a box saying App on the screen.  Let us add the details.  At the top of the view you will see a row of buttons:
 
-#### Use Case Relationships
+![IntelliJ Diagram Buttons](img/intellij-diagram-buttons.png)
 
-Use cases can also relate to each other, typically in **include** and **extend** cases.  Below is the diagram:
+The first four are the ones we are interested in.  These are:
 
-![Include Use Case](img/plantuml-include.png)
+- show fields: display the attributes.
+- show constructors.
+- show methods.
+- show properties - the `get` and `set` style methods.
 
-![Extend Use Case](img/plantuml-extend.png)
+**Click these four buttons now**.  Your window should now look like this:
 
-An *include* relationship is one where a use case includes (i.e. *uses*) another use case to perform its functionality. An *extend* relationship is one where a use case extends (e.g. supports an edge-case) from another use case.  It provides a special version.  These should have been identified in the **Extensions** section of the use case.
+![IntelliJ Diagram with All Details](img/intellij-diagrams-full.png)
 
-#### System
+Note that IntelliJ does not use `+` or `-` do denote visibility but small padlocks.  The information is otherwise the same.
 
-A use case typically exists within a system, or communicates with another system.  For example, see below:
+**Now drag the `Employee` class from the Project View into the window.**  This should display the details of the `Employee` class also:
 
-![System](img/plantuml-system.png)
+![IntelliJ Diagram with App and Employee](img/intellij-diagram-app-employee.png)
 
-*Use Case 1* and *Use Case 2* both exist within the *System*.  *Use Case 2* also communicates with an external system - *Database*.
+With two classes in the window, we can show the dependencies between the classes.  We do this by **clicking the ninth button: Show Dependencies**.  Our view now becomes:
 
-## Using Diagrams.net in IntelliJ
+![IntelliJ Diagram with Dependencies](img/intellij-diagram-dependency.png)
 
-There are quite a few UML diagramming tools out there.  However, we want to store our diagrams in our GitHub repository.  As Git repositories don't like binary files, we will use a textual representation via [Diagrams.net](https://www.diagrams.net/) which can store images as SVG files.  "Scalable Vector Graphics is an XML-based vector image format for two-dimensional graphics with support for interactivity and animation. The SVG specification is an open standard developed by the World Wide Web Consortium since 1999. SVG images are defined in a vector graphics format and stored in XML text file" [Wikipedia](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics).  We will do this via an IntelliJ plugin although you are free to use the web based version at [Diagrams.net](https://www.diagrams.net/). Remember to store your files as SVG files to enable better GitHub integration.
+Notice that `App` has two dependencies on `Employee`: a standard one (since it is used as a parameter) and a `create` dependency.  This is because `App` creates instances of `Employee`.
 
-### Install Diagrams.net Plugin
+## Next Feature: Salary by Department
 
-Next we need to install the Diagrams.net plugin for IntelliJ.  Go to **File**, **Settings** then **Plugins** to open the **Plugins Window**.  Search for **Diagrams.net**.  The plugin you want is **Diagrams.net integration** as shown below:
+For our next feature we are going to build some of the functionality via the diagram view.  We will still need to write logic code ourselves, but we can create some of the specification via the diagram view.
 
-![IntelliJ Diagrams.net Plugin](img/diagrams.net.png)
+Our next feature is getting salary by department.  This is similar to the feature last week.
 
-Click **Install**, then **Accept** and finally **Restart IDE**.  Once IntelliJ has restarted, Diagrams.net should be available.
+**First, set yourself up to start this week's Sprint.**  Refer back to [Lab 04](../lab04) if you are unsure what to do.
 
-### Creating a Use Case Diagram
+### Add Department Class
 
-To see the Diagrams.net is set up correctly we need to create a diagram.  **Right click** on the **use-cases folder**, select **New**, and the **diagrams.net File **.  Give it the name **HR System** and click **OK**.  This should provide you with the following window:
+Our feature requires a new class - `Department`.  If we examine the [database schema](https://dev.mysql.com/doc/employee/en/sakila-structure.html) below we see that a department has two links to `Employee` - one as a collection of workers and another as a manager of a department.
 
-![IntelliJ Diagrams.net Diagram](img/diagrams.editor.png)
+![Employees Database Schema](https://dev.mysql.com/doc/employee/en/images/employees-schema.png)
 
-### Diagram for Use Case 4
+Our class diagram will make this evident as we progress.  First, **add a new class `Department` to your diagram** by **right-clicking in the window** and selecting **New then Class**.  Call the class `Department`.  You should end up with the following:
 
-Let us look at an example from our system.  Below is use case 4:
+![Diagram with `Department` added](img/intellij-diagram-department.png)
 
-![HR System Use Case Diagram](img/HRSystem.png)
+A `Department` has the following information:
 
-### Exercise: Complete the Use Case Diagram
+- the `dept_no` (department number - is actually a `String` such as `d001`).
+- the `dept_name` (department name).
+- the `manager`.
 
-Your task now is to complete the use case diagram for the entire set of use cases defined.  **You only need one diagram for all the cases**. Again, work with your team, and seek feedback.  We will revisit various parts of the diagram throughout the module so you can adjust as you are going along. For the coursework I would suggest simplifying the diagram to possibly 5 use cases which cover the various report types.
+Our class will therefore need that information.  We can do this in the diagram.  **Right-click `Department` and select New then field**.  This will bring up the **New Field Dialogue**:
 
-- Country Reports
-- Population Reports
-- etc
+![IntelliJ Diagram New Field](img/intellij-diagram-new-field.png)
 
-Your User Stories, Use Case Diagram and Use Case Descriptions should reflect each other. Full details of the reports can be included in the Use Case Description Markdown File using  [Cockburn's Use Case Template](use-case.md).   
+We need three fields:
 
-## Next Feature: Salary By Role
+- `public String dept_no`
+- `public String dept_name`
+- `public Employee manager`
 
-Now it is time to work on our next feature - user story 4: As an *HR advisor* I want *to produce a report on the salary of employees of a given role* so that *I can support financial reporting of the organisation.*
+Add these now.  Your class diagram should now look like this:
 
-Remember the steps you took last week for executing a Sprint:
+![Class Diagram with Department Added](img/intellij-add-dept.png)
 
-1. Decide which user story/stories to work on for the next Sprint.
-2. Create a new Sprint on Zube.
-3. Add the user story card(s) to the Ready column in Zube.
-4. Add any additional task cards to Zube and put in priority order.
-5. Pull the latest `develop` branch.
-6. Start a new feature branch for the task(s) or user story.
-7. Select task to work on in Zube.
-8. Work on task.
+Note the automatic addition of a composition relationship.  Also, we already had a `manager` attribute in `Employee` but it is a `String`.  Let us change that to an `Employee`.  **Double-click manager in `Employee`**, then **right-click it and select Refactor then Type Migration**.  This will open the **Type Migration Window**:
 
-We only have one task to do this week: get the salaries by department.  This is very similar to the last feature - get all salaries - but with an additional restriction.  Therefore it is your task to implement this feature on your own.
+![IntelliJ Type Migration](img/intellij-type-migration.png)
 
-### Exercise: Implement Salaries by Role Feature
+**Change the type to `Employee` and click Refactor.**  **Now do the same for `dept_name` in `Employee` but change it to `public Department dept`.**  To rename an attribute, use **Refactor, Rename**.  Your updated diagram should look something like this:
 
-The SQL required for this query is below:
+![Class Diagram after Refactor](img/cd-refactor.png)
 
-```sql
-SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary
-FROM employees, salaries, titles
-WHERE employees.emp_no = salaries.emp_no
-AND employees.emp_no = titles.emp_no
-AND salaries.to_date = '9999-01-01'
-AND titles.to_date = '9999-01-01'
-AND titles.title = '<title>'
-ORDER BY employees.emp_no ASC
+We have now done a few basic things in our diagram:
+
+- added a new class.
+- added fields to a class.
+- modified a field in a class.
+
+Let us now add methods to get department information.
+
+### Add Get Department by Name Method
+
+Once we have a department number or name we want to be able to create a department object.  To do this, our application needs a new method called `getDepartment`.  This will get a department object via its name.  
+
+To add a method to `App`, **right-click the class in the diagram and select New then Method.**  This will open up the **New Method Window**:
+
+![IntelliJ Diagram New Method](img/intellij-diagram-new-method.png)
+
+Adding a method is a little more complicated.  You need to define the return type (`Department`), the name (`getDepartment`) and the parameters.  To add a parameter, **click the little + sign on the right**.  Then define the parameters as needed.  The signature is:
+
+- `public Department getDepartment(String dept_name)`
+
+After this, your class diagram should look like this:
+
+![Class Diagram with `getDepartment`](img/cd-getdept.png)
+
+### Add Get Salaries by Department Method
+
+To actually complete the feature we need a new method in `App`: `getSalariesByDepartment`.  It has the signature:
+
+```java
+public ArrayList<Employee> getSalariesByDepartment(Department dept)
 ```
 
-`<title>` is replaced by the name of the role (title).  For example, the end of the `Engineer` salary information is:
+**Add this method now.**
 
+### Exercise: Implement the Feature
+
+All the scaffolding is in place to finish the feature.  You have to complete the following two methods:
+
+- `public Department getDepartment(String dept_name)`
+- `public ArrayList<Employee> getSalariesByDepartment(Department dept)`
+
+You will also need to update `main` to test the feature.  **You will also need to update the comments to ensure your code is still well explained.**  If you use `getDepartment("Sales")` for the department, your output should be as follows:
 
 ```shell
 ...
-499838     Annemarie       Peroz                53972   
-499843     Vitaly          Zucker               66847   
-499855     Constantine     Michaels             49559   
-499856     Yoshinari       Theuretzbacher       50966   
-499857     Leszek          Tempesti             60478   
-499896     Gianluca        Rando                59952   
-499900     Leon            Baba                 51414   
-499904     Kazuhiro        Velasco              47104   
-499913     Masako          Heiserman            73788   
-499918     Hilary          Rodiger              55843   
-499927     Manohar         Heemskerk            83769   
-499935     Ymte            Perelgut             77520   
-499936     Chiranjit       Himler               54253   
-499948     Cordelia        Paludetto            45625   
-499962     Yongqiao        Dalton               57667   
-499973     Lobel           Taubman              61400   
-499979     Prasadram       Waleschkowski        54088   
-499990     Khaled          Kohling              45512   
-499993     DeForest        Mullainathan         44305   
-499995     Dekang          Lichtner             52868   
-499999     Sachin          Tsukuda              77303   
+499894     Maja            Lamba                68787   
+499895     Raimond         Leuchs               98808   
+499899     Mong            Usdin                104333  
+499901     Make            Terekhov             49223   
+499902     Aloke           Wuwongse             100339  
+499919     Masako          Angiulli             107704  
+499920     Christ          Murtagh              123461  
+499926     Youpyo          Perfilyeva           109498  
+499953     Leszek          Pulkowski            114876  
+499960     Gaetan          Veldwijk             94157   
+499966     Mihalis         Crabtree             98388   
+499976     Guozhong        Felder               107386  
+499980     Gino            Usery                108364  
+499986     Nathan          Ranta                119906  
+499987     Rimli           Dusink               56336 
 ```
 
-## Cleaning Up and Committing
+If you need a hand, the SQL for the `getSalariesByDepartment` method is:
 
-And now end your Sprint and clean up.  Follow the process as defined at the end of [Lab 4](../lab04).
+```sql
+SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary
+FROM employees, salaries, dept_emp, departments
+WHERE employees.emp_no = salaries.emp_no
+AND employees.emp_no = dept_emp.emp_no
+AND dept_emp.dept_no = departments.dept_no
+AND salaries.to_date = '9999-01-01'
+AND departments.dept_no = '<dept_no>'
+ORDER BY employees.emp_no ASC
+```
+
+### Clean-up and Commit
+
+As before, you need to end the feature.  Refer to [Lab 04](../lab04) for our current process.
+
+## Exercises
+
+These exercises require some work on the SQL mainly:
+
+1. Add the department manager to the department in `getDepartment` if you have not done so already.
+2. Update `getEmployee` to also add the department manager as an `Employee`.
+3. Add a new method to `getEmployee` based on their first name and last name.

@@ -1,253 +1,552 @@
-# Lab 06: UML
+# Lab 06: Unit Testing
 
-In this lab we will continue our work on diagramming by examining UML briefly, and class diagrams in detail.  UML (the Unified Modelling Language) is designed to visualise software.  As software has several ways of being viewed, UML likewise provides a number of diagram types.  We will only mention four here but the [Wikipedia page on UML](https://en.wikipedia.org/wiki/Unified_Modeling_Language) points to further information.
+In this lab we will add automated testing to our method.  Unit Testing is a technique for testing individual *units* of code.  A unit is a piece of functionality - normally an individual pathway through a method.  We can write code that will test this branch of the application, and thus automate our testing process.  This will give us confidence in our code as we continue to develop it.
 
 ## Behavioural Objectives
 
-- [ ] **Define** the *two main types of UML diagram*.
-- [ ] **Describe** the *elements of a UML class diagram*.
-- [ ] **Add code** to an *application via a class diagram*.
+- [ ] **Describe** a *unit test.*
+- [ ] **Create** *unit tests*.
+- [ ] **Execute** *unit tests in IntelliJ.*
+- [ ] **Use code coverage** to *visualise code tested.*
 
-## UML Diagram Types
+## What is Unit Testing?
 
-UML diagrams can be divided into two broad types:
+[Wikipedia](https://en.wikipedia.org/wiki/Unit_testing) defines unit testing as (emphasis mine):
 
-- **Behavioural diagrams**: those which describe the behaviour of the system as it executes.
-- **Structural diagrams**: those which describe the static structure of the system.
+> In computer programming, unit testing is a **software testing method** by which **individual units of source code, sets of one or more computer program modules** together with associated control data, usage procedures, and operating procedures, **are tested to determine whether they are fit for use**.
 
-The four most common diagram types are **use case diagrams**, **activity diagrams**, **class diagrams**, and **sequence diagrams**.  Class diagrams are a *structural diagram* whereas the other three are *behavioural diagrams*.
+Also from Wikipedia:
 
-### Use Case Diagram
+> Intuitively, one can view a unit as **the smallest testable part of an application**.
 
-We covered use case diagrams in the last lab.  Essentially, use case diagrams try to capture the abstract behaviour of a system at specification time.  They are a useful tool for communicating with stakeholders or providing a high-level overview of specification behaviour.  However, they tend to have little direct mapping to actual code developed.
+From these statements, we can define unit testing as:
 
-### Activity Diagram
+- a *software testing method*.
+- testing the *smallest part of an application*.
+- to determine *fitness for use*.
 
-Activity diagrams you are likely familiar with, although the name might be unusual.  An activity diagram is just a flow chart:
-
-<p><a href="https://commons.wikimedia.org/wiki/File:Activity_conducting.svg#/media/File:Activity_conducting.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Activity_conducting.svg/1200px-Activity_conducting.svg.png" alt="Activity conducting.svg"></a><br>By ​<a href="https://en.wikipedia.org/wiki/Main_Page" class="extiw" title="en:Main Page">spanish Wikipedia</a> user <a href="https://en.wikipedia.org/wiki/User:Gwaur" class="extiw" title="en:User:Gwaur">Gwaur</a>, <a href="http://creativecommons.org/licenses/by-sa/3.0/" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=4812400">Link</a></p>
-Whereas the use case diagram captures functionality required from a user story point of view, the activity diagram allows steps to be defined in the process.  This comes closer to actual code to be written, and can be refined to the point of actual code statements if need be, although that is very low-level.  As a learner, activity diagrams can be very useful to help you map out how to code at a low-level.  As you become more experienced, activity diagrams become more abstract and a communication tool between stakeholders.
-
-### Class Diagram
-
-Is the focus of the main part of the lab so we will cover this later.
-
-### Sequence Diagram
-
-Sequence diagrams map the communication between components (objects) as a system executes, and focuses on the method calls between objects.  For example:
-
-<p><a href="https://commons.wikimedia.org/wiki/File:CheckEmail.svg#/media/File:CheckEmail.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/CheckEmail.svg/1200px-CheckEmail.svg.png" alt="CheckEmail.svg"></a><br>By Coupling_loss_graph.svg - File:CheckEmail.png, <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=20544977">Link</a></p>
-Here, an object of type `Computer` has a method `checkEmail` called on it.  The `Computer` then calls methods on a `Server` object such as `newEmail`.  The point of the sequence diagram is that it captures actual object interactions.  The sequences themselves are likely already captured in the activity diagram, but now we are using concrete object specifications to bring our solution to code.
-
-## UML Class Diagram Overview
-
-Of the four diagrams discussed, class diagrams are the most complex.  Here is a simple example:
-
-<p><a href="https://commons.wikimedia.org/wiki/File:KP-UML-Generalization-20060325.svg#/media/File:KP-UML-Generalization-20060325.svg"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/KP-UML-Generalization-20060325.svg/1200px-KP-UML-Generalization-20060325.svg.png" alt="KP-UML-Generalization-20060325.svg"></a><br>By No machine-readable author provided. <a href="//commons.wikimedia.org/w/index.php?title=User:Noodlez84&amp;action=edit&amp;redlink=1" class="new" title="User:Noodlez84 (page does not exist)">Noodlez84</a> assumed (based on copyright claims). - No machine-readable source provided. Own work assumed (based on copyright claims)., Public Domain, <a href="https://commons.wikimedia.org/w/index.php?curid=659677">Link</a></p>
-A class diagram attempts to capture the details of a class in a diagram.  There are quite a few details, including:
-
-- the class or interface.
-- the name of the class.
-- relationships between classes (e.g., inheritance).
-- attributes of the class (i.e., class variables) including types.
-- methods of the class including parameter and return types.
-- the visibility levels of attributes and methods (i.e., *private*, *public*, *protected*).
-
-Each of these points requires some form of visual metaphor:
-
-- classes are represented by rectangles.
-- the name is put at the top of the rectangle.
-- relationships are shown via lines and arrows between rectangles.
-- attributes are listed in a section under the name with types noted after them.
-- methods are listed in a section under the attributes with types and parameters noted.
-- visibility is marked before an item: `+` for public, `-` for private, and `#` for protected.
-
-### Class Diagram Relationships
-
-There are several different relationship types between classes.  The point of mapping them out is to understand how classes are related so when we make changes we know the likely impact.  Below is the common relationship types:
-
-![Class Relationships](img/relationships.png)
-
-
-
-- *association* is the most generic relationship type.
-- *inheritance* means that a class is a specialisation of another class.
-- *realization/implementation* is when a class implements an *interface*.
-- *dependency* is a special form of association where changes to a class means the dependant class will likely have to change.
-- *aggregation* is a special form of association denoting a *has-a* relationship.  This is not considered a strong relationship in so far as the class does not own the associated object.
-- *composition* is as aggregation but now the class **owns** the object.  When an instance of the owning object is destroyed so are its components.
-
-[Lecture 11](../../lectures/lecture11) goes into more detail about relationship types.
-
-## Class Diagrams in IntelliJ
-
-UML support used to be a key feature in an IDE but the requirements have changed as industry practice has moved.  However, it is still common for an IDE to support class diagrams as they have a direct mapping to our code.  IntelliJ is no different in that regard.
-
-To use class diagrams in IntelliJ you need to ensure either:
-
-- you have the Ultimate Edition installed; or
-- you install the UML Support plugin.
-
-Once ready, to view a class diagram simply **right-click** on a class (e.g., `App`) in the **Project View** and select **Diagrams, Show Diagram**.  This should bring up the following view:
-
-![IntelliJ Diagram View](img/intellij-diagram.png)
-
-OK not exciting so far - we just have a box saying App on the screen.  Let us add the details.  At the top of the view you will see a row of buttons:
-
-![IntelliJ Diagram Buttons](img/intellij-diagram-buttons.png)
-
-The first four are the ones we are interested in.  These are:
-
-- show fields: display the attributes.
-- show constructors.
-- show methods.
-- show properties - the `get` and `set` style methods.
-
-**Click these four buttons now**.  Your window should now look like this:
-
-![IntelliJ Diagram with All Details](img/intellij-diagrams-full.png)
-
-Note that IntelliJ does not use `+` or `-` do denote visibility but small padlocks.  The information is otherwise the same.
-
-**Now drag the `Employee` class from the Project View into the window.**  This should display the details of the `Employee` class also:
-
-![IntelliJ Diagram with App and Employee](img/intellij-diagram-app-employee.png)
-
-With two classes in the window, we can show the dependencies between the classes.  We do this by **clicking the ninth button: Show Dependencies**.  Our view now becomes:
-
-![IntelliJ Diagram with Dependencies](img/intellij-diagram-dependency.png)
-
-Notice that `App` has two dependencies on `Employee`: a standard one (since it is used as a parameter) and a `create` dependency.  This is because `App` creates instances of `Employee`.
-
-## Next Feature: Salary by Department
-
-For our next feature we are going to build some of the functionality via the diagram view.  We will still need to write logic code ourselves, but we can create some of the specification via the diagram view.
-
-Our next feature is getting salary by department.  This is similar to the feature last week.
-
-**First, set yourself up to start this week's Sprint.**  Refer back to [Lab 04](../lab04) if you are unsure what to do.
-
-### Add Department Class
-
-Our feature requires a new class - `Department`.  If we examine the [database schema](https://dev.mysql.com/doc/employee/en/sakila-structure.html) below we see that a department has two links to `Employee` - one as a collection of workers and another as a manager of a department.
-
-![Employees Database Schema](https://dev.mysql.com/doc/employee/en/images/employees-schema.png)
-
-Our class diagram will make this evident as we progress.  First, **add a new class `Department` to your diagram** by **right-clicking in the window** and selecting **New then Class**.  Call the class `Department`.  You should end up with the following:
-
-![Diagram with `Department` added](img/intellij-diagram-department.png)
-
-A `Department` has the following information:
-
-- the `dept_no` (department number - is actually a `String` such as `d001`).
-- the `dept_name` (department name).
-- the `manager`.
-
-Our class will therefore need that information.  We can do this in the diagram.  **Right-click `Department` and select New then field**.  This will bring up the **New Field Dialogue**:
-
-![IntelliJ Diagram New Field](img/intellij-diagram-new-field.png)
-
-We need three fields:
-
-- `public String dept_no`
-- `public String dept_name`
-- `public Employee manager`
-
-Add these now.  Your class diagram should now look like this:
-
-![Class Diagram with Department Added](img/intellij-add-dept.png)
-
-Note the automatic addition of a composition relationship.  Also, we already had a `manager` attribute in `Employee` but it is a `String`.  Let us change that to an `Employee`.  **Double-click manager in `Employee`**, then **right-click it and select Refactor then Type Migration**.  This will open the **Type Migration Window**:
-
-![IntelliJ Type Migration](img/intellij-type-migration.png)
-
-**Change the type to `Employee` and click Refactor.**  **Now do the same for `dept_name` in `Employee` but change it to `public Department dept`.**  To rename an attribute, use **Refactor, Rename**.  Your updated diagram should look something like this:
-
-![Class Diagram after Refactor](img/cd-refactor.png)
-
-We have now done a few basic things in our diagram:
-
-- added a new class.
-- added fields to a class.
-- modified a field in a class.
-
-Let us now add methods to get department information.
-
-### Add Get Department by Name Method
-
-Once we have a department number or name we want to be able to create a department object.  To do this, our application needs a new method called `getDepartment`.  This will get a department object via its name.  
-
-To add a method to `App`, **right-click the class in the diagram and select New then Method.**  This will open up the **New Method Window**:
-
-![IntelliJ Diagram New Method](img/intellij-diagram-new-method.png)
-
-Adding a method is a little more complicated.  You need to define the return type (`Department`), the name (`getDepartment`) and the parameters.  To add a parameter, **click the little + sign on the right**.  Then define the parameters as needed.  The signature is:
-
-- `public Department getDepartment(String dept_name)`
-
-After this, your class diagram should look like this:
-
-![Class Diagram with `getDepartment`](img/cd-getdept.png)
-
-### Add Get Salaries by Department Method
-
-To actually complete the feature we need a new method in `App`: `getSalariesByDepartment`.  It has the signature:
+Let us look at an example:
 
 ```java
-public ArrayList<Employee> getSalariesByDepartment(Department dept)
+public int method(String str)
+{
+    if (str != null)
+        return str.length();
+    else
+        return -1;
+}
 ```
 
-**Add this method now.**
+Here we have two pathways through our code: the two branches of the `if` statement.  A unit test would test one of these branches to see if it works correctly.  That means we need at least two unit tests:
 
-### Exercise: Implement the Feature
+1. When `str` is not `null`.
+2. When `str` is `null`.
 
-All the scaffolding is in place to finish the feature.  You have to complete the following two methods:
+An example unit test here could be:
 
-- `public Department getDepartment(String dept_name)`
-- `public ArrayList<Employee> getSalariesByDepartment(Department dept)`
+```java
+@Test
+public void testMethod1()
+{
+    assertEqual(5, method("Hello"));
+}
+```
 
-You will also need to update `main` to test the feature.  **You will also need to update the comments to ensure your code is still well explained.**  If you use `getDepartment("Sales")` for the department, your output should be as follows:
+The unit test is checking if `method` will return `5` when `Hello` is provided as an input.  The `assertEquals` means that if `method` does not return `5` then the test will fail.
+
+Unit testing is now a **fundamental** part of software development and you should start using it as common practice from now on.  There are unit testing frameworks for most languages.  We will cover how to get started with Maven an IntelliJ in this lab.  There is plenty of material online on other approaches in other languages.
+
+## Getting Started with Unit Testing in Maven and IntelliJ
+
+Maven and IntelliJ both support unit testing as part of their workflows.  This means we can add the configuration for unit testing to our Maven file and IntelliJ will automatically understand what is happening.  It also allows us to run our unit tests via GitHub Actions later.
+
+### Maven Configuration Code for JUnit
+
+For this lab we will just work in the `develop` branch.  Check out the project as normal and switch to the `develop` branch.
+
+As SQL, we need to add a `dependency` to our Maven project to support unit testing via the JUnit framework.  The following should be **added to the `dependencies` section of the project's `pom.xml` file**:
+
+```xml
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>5.1.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+For reference, your `dependencies` section should look as follows:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>5.1.44</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.1.0</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+```
+
+We also need to add plugin's so Maven can run our unit tests correctly.  **Add the following to the `plugins` section**:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>2.19.1</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-surefire-provider</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+    </dependencies>
+</plugin>
+```
+
+Save the file and IntelliJ should automatically pull the necessary files to support JUnit.
+
+### Our First Unit Test
+
+We are now ready to write our first unit test.  In Java, it is traditional and considered good practice to store test classes in a separate directory.  Let us do this now:
+
+1. **Add a new folder - `test` - to the `src` folder of the project**.
+2. **Add a new folder - `java` - to the `test` folder**.
+3. **Add a new file - `MyTest.java` - to the new `java` folder**.
+4. **Add the following code to `MyTest.java`**:
+
+```java
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+
+class MyTest
+{
+    @Test
+    void unitTest()
+    {
+        assertEquals(5, 5);
+    }
+}
+```
+
+There are three pieces of code you might be unfamiliar with:
+
+- `import static` allows us to import the `static` methods of a class; `Assertions` in this case.
+- `@Test` denotes that a method is a test method.
+- `assertEquals` is a `static` method from `Assertions`.  It is a check to see if two values are equal.  If they are not the test will fail.
+
+### Running the Tests via Maven
+
+To run the test using Maven, **open the Maven view on the right** and select the **test lifecycle stage**.  Maven should build your code and run the tests, providing the following output:
 
 ```shell
-...
-499894     Maja            Lamba                68787   
-499895     Raimond         Leuchs               98808   
-499899     Mong            Usdin                104333  
-499901     Make            Terekhov             49223   
-499902     Aloke           Wuwongse             100339  
-499919     Masako          Angiulli             107704  
-499920     Christ          Murtagh              123461  
-499926     Youpyo          Perfilyeva           109498  
-499953     Leszek          Pulkowski            114876  
-499960     Gaetan          Veldwijk             94157   
-499966     Mihalis         Crabtree             98388   
-499976     Guozhong        Felder               107386  
-499980     Gino            Usery                108364  
-499986     Nathan          Ranta                119906  
-499987     Rimli           Dusink               56336 
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running MyTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 sec - in MyTest
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 ```
 
-If you need a hand, the SQL for the `getSalariesByDepartment` method is:
+So our test had 0 failures and 0 errors, so it passed.
 
-```sql
-SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary
-FROM employees, salaries, dept_emp, departments
-WHERE employees.emp_no = salaries.emp_no
-AND employees.emp_no = dept_emp.emp_no
-AND dept_emp.dept_no = departments.dept_no
-AND salaries.to_date = '9999-01-01'
-AND departments.dept_no = '<dept_no>'
-ORDER BY employees.emp_no ASC
+### Adding a JUnit Configuration to IntelliJ Build
+
+Having Maven run our tests is important when we combine our tests into our continuous integration process.  However, a textual response is not as easy to read.  IntelliJ can provide us with better visual feedback.  First though we need to tell IntelliJ how to run our tests.
+
+First, we need to tell IntelliJ where our tests are.  This is done via the **Project Structure Dialogue**.  **Select File then Project Structure**.  This will open the following window:
+
+![IntelliJ Project Structure Dialogue](img/intellij-project-structure.png)
+
+**Select the `src/test/java` folder** and **click the Tests button at the top of the structure view.**  This tells IntelliJ that our tests are in this folder.  **Click OK** to exit.
+
+Now we need to add a **Run/Debug Configuration**.  **Select Run then Edit Configurations** to open the new view:
+
+![IntelliJ Run Configurations Dialogue](img/intellij-run-configurations.png)
+
+Modify the dialogue to match.  That is:
+
+- Use the JUnit template on the left.
+- Select `devopsethods` as the classpath of module.
+- Use `MyTest` as the Class.
+
+**Click OK** and IntelliJ is now ready to run the tests.
+
+### Running Tests
+
+To run the tests you should just be able to **click the green run button**.  If not, ensure that the new build configuration is selected as the run target and try again.  Once completed, you should get the following output:
+
+![IntelliJ Tests Passed](img/intellij-tests-passed.png)
+
+The green tick means the test passed.  Now let us see what happens when a test fails.  Add the following code to `MyTest`:
+
+```java
+@Test
+void unitTest2()
+{
+    assertEquals(5, 4);
+}
 ```
 
-### Clean-up and Commit
+Run the tests again and this time you will get the following:
 
-As before, you need to end the feature.  Refer to [Lab 04](../lab04) for our current process.
+`unitTest2` has failed, and on the right we see why:
 
-## Exercises
+```shell
+Expected :5
+Actual   :4
+```
 
-These exercises require some work on the SQL mainly:
+![IntelliJ Tests Failed](img/intellij-tests-failed.png)
 
-1. Add the department manager to the department in `getDepartment` if you have not done so already.
-2. Update `getEmployee` to also add the department manager as an `Employee`.
-3. Add a new method to `getEmployee` based on their first name and last name.
+Notice also the failing test is red underlined in the code.
+
+### Other Test Examples
+
+Add the following to `MyTest`.  They illustrate some other test types:
+
+```java
+@Test
+void unitTest3()
+{
+    assertEquals(5, 5, "Messages are equal");
+}
+
+@Test
+void unitTest4()
+{
+    assertEquals(5.0, 5.01, 0.02);
+}
+
+@Test
+void unitTest5()
+{
+    int[] a = {1, 2, 3};
+    int[] b = {1, 2, 3};
+    assertArrayEquals(a, b);
+}
+
+@Test
+void unitTest6()
+{
+    assertTrue(5 == 5);
+}
+
+@Test
+void unitTest7()
+{
+    assertFalse(5 == 4);
+}
+
+@Test
+void unitTest8()
+{
+    assertNull(null);
+}
+
+@Test
+void unitTest9()
+{
+    assertNotNull("Hello");
+}
+
+@Test
+void unitTest10()
+{
+    assertThrows(NullPointerException.class, this::throwsException);
+}
+
+void throwsException() throws NullPointerException
+{
+    throw new NullPointerException();
+}
+```
+
+- `unitTest3` illustrates how we can add a message to a test.
+- `unitTest4` illustrates how to test floating point values with an error range.
+- `unitTest5` illustrates how to compare array contents in a test.
+- `unitTest6` illustrates how to test if a value is `true`.
+- `unitTest7` illustrates how to test if a value is `false`.
+- `unitTest8` illustrates how to test if a value is `null`.
+- `unitTest9` illustrates how to test if a value is not `null`.
+- `unitTest10` illustrates how to test if a method throws an exception.  By default, any exception thrown fails a test if no `assertThrows` matches.
+
+## Adding Tests to the HR System: Printing Salaries
+
+Let us add unit tests to our HR System.  We will only add tests for printing salaries now.  We will add more tests as we progress.
+
+### Inputs to Printing Salaries
+
+A good technique for defining unit tests is to think about the possible values that can be provided as parameters.  `printSalaries` takes an `ArrayList<Employee>` as a parameter.  There are four possible values that can be provided:
+
+- `null`.
+- an empty list.
+- a list with `null` member in it.
+- a list with all non-null members (a normal list).
+
+We will create these four tests, updating our `printSalaries` code as required.
+
+### Unit Tests for Printing Salaries
+
+First, **delete the existing test file**.  We don't want it confusing the test results.  Then **add a new package to `src/test/java` called `com.napier.devops`**.  Finally, we need to update our test configuration.  Change it to the following, where we run all tests in a package:
+
+![IntelliJ Package Tests](img/intellij-package-tests.png)
+
+#### Employees is `null`
+
+First we will add the test to check what happens when we pass `null` to `printSalaries`.  We don't want any error to occur, so really we just want to call the method.  The test code is:
+
+```java
+package com.napier.devops;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class AppTest
+{
+    static App app;
+
+    @BeforeAll
+    static void init()
+    {
+        app = new App();
+    }
+
+    @Test
+    void printSalariesTestNull()
+    {
+        app.printSalaries(null);
+    }
+}
+```
+
+The method `init` is called `@BeforeAll` the tests are run.  It allows us to do some initial construction work to manage the tests.  Here, we are creating an instance of `App` to work with.  The `@Test` method will then call `printSalaries` with `null`.
+
+When you run the test, it will fail.  This is because a `NullPointerException` is thrown.  We can fix that by updating `printSalaries` to check if `employees` is null:
+
+```java
+public void printSalaries(ArrayList<Employee> employees)
+{
+    // Check employees is not null
+    if (employees == null)
+    {
+        System.out.println("No employees");
+        return;
+    }
+    // Print header
+    System.out.println(String.format("%-10s %-15s %-20s %-8s", "Emp No", "First Name", "Last Name", "Salary"));
+    // Loop over all employees in the list
+    for (Employee emp : employees)
+    {
+        String emp_string =
+                String.format("%-10s %-15s %-20s %-8s",
+                        emp.emp_no, emp.first_name, emp.last_name, emp.salary);
+        System.out.println(emp_string);
+    }
+}
+```
+
+Run the test now and it will pass.
+
+#### Employees is Empty
+
+Let us test what happens when `employees` is empty:
+
+```java
+@Test
+void printSalariesTestEmpty()
+{
+    ArrayList<Employee> employess = new ArrayList<Employee>();
+    app.printSalaries(employess);
+}
+```
+
+This test will pass, so let us move on.
+
+#### Employees Contains `null`
+
+Our next test will try and print a list with a `null` value in it:
+
+```java
+@Test
+void printSalariesTestContainsNull()
+{
+    ArrayList<Employee> employess = new ArrayList<Employee>();
+    employess.add(null);
+    app.printSalaries(employess);
+}
+```
+
+Running this test also fails.  We need to update `printSalaries` to check if an `Employee` is `null`:
+
+```java
+public void printSalaries(ArrayList<Employee> employees)
+{
+    // Check employees is not null
+    if (employees == null)
+    {
+        System.out.println("No employees");
+        return;
+    }
+    // Print header
+    System.out.println(String.format("%-10s %-15s %-20s %-8s", "Emp No", "First Name", "Last Name", "Salary"));
+    // Loop over all employees in the list
+    for (Employee emp : employees)
+    {
+        if (emp == null)
+            continue;
+        String emp_string =
+                String.format("%-10s %-15s %-20s %-8s",
+                        emp.emp_no, emp.first_name, emp.last_name, emp.salary);
+        System.out.println(emp_string);
+    }
+}
+```
+
+Run the tests again and it will pass.
+
+#### Employee Contains All Non-`null`
+
+Our final test is for normal conditions.  The test code is:
+
+```java
+@Test
+void printSalaries()
+{
+    ArrayList<Employee> employees = new ArrayList<Employee>();
+    Employee emp = new Employee();
+    emp.emp_no = 1;
+    emp.first_name = "Kevin";
+    emp.last_name = "Chalmers";
+    emp.title = "Engineer";
+    emp.salary = 55000;
+    employees.add(emp);
+    app.printSalaries(employees);
+}
+```
+
+This test will also pass.
+
+## Code Coverage
+
+To end our examination of unit testing we will look at **Code Coverage**.  Coverage allows us to examine how much of our code is tested.
+
+To enable code coverage, select **Run then Edit Configurations**.  Open the **Code Coverage** tab and ensure it looks the same as this:
+
+![IntelliJ Code Coverage](img/intellij-code-coverage.png)
+
+**Click OK** to close the window.  Then **select Run and Run with Coverage.**  This will open the **Code Coverage View** on the right:
+
+![IntelliJ Package Coverage](img/intellij-package-coverage.png)
+
+It details the percentage of classes, methods and lines covered by tests.  **Double-click `com.napier.devops`** to open a per-class view:
+
+![IntelliJ Class Coverage](img/intellij-class-coverage.png)
+
+As you can see, it is the `App` class that needs the most work.  We can actually see the lines covered and not covered by tests in the source file:
+
+![IntelliJ Code Coverage Highlighting](img/intellij-code-coverage-highlight.png)
+
+Lines with red next to them (e.g., lines 196 to 201) are not tested.  Lines with green next to them (e.g., lines 230 to 235) are tested.  This allows us to ensure **all** our code is tested.
+
+## Exercise: Add Unit Tests for Display Employee
+
+Now add unit tests for the `displayEmployee` method.  Follow the same pattern:
+
+- Define the possible inputs for the method.
+- Write a test for each input.
+- Update `displayEmployee` until all tests pass.
+
+## Next Feature: Department Manager Printing Salaries
+
+Our next feature is:
+
+3. As an *department manager* I want *to produce a report on the salary of employees in my department* so that *I can support financial reporting for my department.*
+
+We have already implemented this feature, so move it to done in your Zube board.
+
+## Update GitHub Actions for Unit Tests
+
+We can separate the Unit Tests from our application in GitHub Actions.
+
+Change your workflow main.yml to the following
+
+```yml
+name: A workflow for my Hello World App
+on: push
+
+jobs:
+  build:
+    name: Hello world action
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Unit Tests
+        run: mvn -Dtest=com.napier.devops.AppTest test
+      - name: Package and Run docker compose
+        run: |
+          mvn package -DskipTests
+          docker compose up --abort-on-container-exit
+
+
+```
+
+There are a few things to note here.
+
+We have added a stage called Unit Tests that runs a **specific** Test Class using the parameter 
+
+`-Dtest=com.napier.devops.AppTest` to specify the test class
+
+We have combined stages into a new stage called *Package and Run docker compose* that uses multiple run commands (The pipe **|** following the run: declaration allows multiple lines to follow)
+
+There are two commands:
+
+ ```run: |
+          mvn package -DskipTests
+          docker compose up --abort-on-container-exit
+ ```
+ The first command packages our jar without running the Unit Tests (In maven all commands above a stage are executed so mvn package runs clean, validate compile and test before packaging)
+
+![Maven Stages](img/mvn-stages.png)
+
+The second command runs our docker-compose file which requires the packaged jar with dependencies.
+
+## Cleanup
+
+Now clean-up as normal, ensuring you commit everything to GitHub, checking the our new GitHub Actions are successful. If they are you should see output similar to the following.
+
+### Unit Tests
+![Unit Test](img/testSuccess.png)
+
+### Package and docker-compose
+![Unit Test](img/packageSuccess.png)
+

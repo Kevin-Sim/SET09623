@@ -132,11 +132,11 @@ jobs:
       - name: Compile with Maven
         run: mvn compile
       - name: Build Docker Image
-        run: docker build -t semimage .
+        run: docker build -t devopsimage .
       - name: Run image
-        run: docker run --name semcontainer -d semimage
+        run: docker run --name devopscontainer -d devopsimage
       - name: view logs
-        run: docker logs semcontainer
+        run: docker logs devopscontainer
 ```
 
 To sync our local version do a pull from IntelliJ 
@@ -189,11 +189,11 @@ And now we have our project automatically building on pushes to GitHub, and the 
 
 You can add various badges to your project.  [Sheilds.io](https://shields.io/) is one such site that provides badges.  We are going to add two to our `README.md`: one for our license and one for our release.  The license badge takes the URL:
 
-`[![LICENSE](https://img.shields.io/github/license/<github-username>/sem.svg?style=flat-square)](https://github.com/<github-username>/sem/blob/master/LICENSE)`
+`[![LICENSE](https://img.shields.io/github/license/<github-username>/devops.svg?style=flat-square)](https://github.com/<github-username>/devops/blob/master/LICENSE)`
 
 Just replace `<github-username>` with your GitHub username.  The release badge is:
 
-`[![Releases](https://img.shields.io/github/release/<github-username>/sem/all.svg?style=flat-square)](https://github.com/<github-username>/sem/releases)`
+`[![Releases](https://img.shields.io/github/release/<github-username>/devops/all.svg?style=flat-square)](https://github.com/<github-username>/devops/releases)`
 
 And then update your GitHub repository:
 
@@ -238,7 +238,7 @@ This time I will use Shields.io to create a build badge. Go to [https://shields.
 Update the `README.md` as below (keep the other badges):
 
 ```markdown
-# Software Engineering Methods
+# DevOps
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/<username>/<repository>/<action name taken from main.yml>/<branch>?style=flat-square)
 ```
 
@@ -317,8 +317,8 @@ We add this to the `pom.xml` file as follows:
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.napier.sem</groupId>
-    <artifactId>seMethods</artifactId>
+    <groupId>com.napier.devops</groupId>
+    <artifactId>devopsethods</artifactId>
     <version>0.1.0.1</version>
     
      <dependencies>
@@ -346,7 +346,7 @@ IntelliJ will manage everything for us.  Initially the test `org.mongodb` and `m
 Now we can test that we can talk to the MongoDB server.  We will update `App.java` to the following:
 
 ```java
-package com.napier.sem;
+package com.napier.devops;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -365,8 +365,8 @@ public class App
         MongoCollection<Document> collection = database.getCollection("test");
         // Create a document to store
         Document doc = new Document("name", "Kevin Sim")
-                .append("class", "Software Engineering Methods")
-                .append("year", "2021")
+                .append("class", "DevOps")
+                .append("year", "2024")
                 .append("result", new Document("CW", 95).append("EX", 85));
         // Add document to collection
         collection.insertOne(doc);
@@ -381,7 +381,7 @@ public class App
 Now all we have to do is run the application normally (i.e. not as a Docker container).  Select **Run** then **Run** and select **App** as the configuration.  Your application should launch, connect to the MongoDB server running in the Docker container and perform some basic operations as shown.  The console output will look something like the following:
 
 ```shell
-"C:\Program Files\Java\jdk1.8.0_181\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2020.3.2\lib\idea_rt.jar=51700:C:\Program Files\JetBrains\IntelliJ IDEA 2020.3.2\bin" -Dfile.encoding=UTF-8 -classpath "C:\Program Files\Java\jdk1.8.0_181\jre\lib\charsets.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\deploy.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\access-bridge-64.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\cldrdata.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\dnsns.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\jaccess.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\jfxrt.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\localedata.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\nashorn.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunec.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunjce_provider.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunmscapi.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunpkcs11.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\zipfs.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\javaws.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jce.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jfr.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jfxswt.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jsse.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\management-agent.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\plugin.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\resources.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\rt.jar;C:\Users\KevL\Desktop\SEM_Demo\target\classes;C:\Users\KevL\.m2\repository\org\mongodb\mongodb-driver\3.6.4\mongodb-driver-3.6.4.jar;C:\Users\KevL\.m2\repository\org\mongodb\bson\3.6.4\bson-3.6.4.jar;C:\Users\KevL\.m2\repository\org\mongodb\mongodb-driver-core\3.6.4\mongodb-driver-core-3.6.4.jar" com.napier.sem.App
+"C:\Program Files\Java\jdk1.8.0_181\bin\java.exe" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2020.3.2\lib\idea_rt.jar=51700:C:\Program Files\JetBrains\IntelliJ IDEA 2020.3.2\bin" -Dfile.encoding=UTF-8 -classpath "C:\Program Files\Java\jdk1.8.0_181\jre\lib\charsets.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\deploy.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\access-bridge-64.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\cldrdata.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\dnsns.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\jaccess.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\jfxrt.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\localedata.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\nashorn.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunec.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunjce_provider.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunmscapi.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\sunpkcs11.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\ext\zipfs.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\javaws.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jce.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jfr.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jfxswt.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\jsse.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\management-agent.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\plugin.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\resources.jar;C:\Program Files\Java\jdk1.8.0_181\jre\lib\rt.jar;C:\Users\KevL\Desktop\devops_Demo\target\classes;C:\Users\KevL\.m2\repository\org\mongodb\mongodb-driver\3.6.4\mongodb-driver-3.6.4.jar;C:\Users\KevL\.m2\repository\org\mongodb\bson\3.6.4\bson-3.6.4.jar;C:\Users\KevL\.m2\repository\org\mongodb\mongodb-driver-core\3.6.4\mongodb-driver-core-3.6.4.jar" com.napier.devops.App
 Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
 INFO: Cluster created with settings {hosts=[localhost:27000], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
 Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
@@ -392,7 +392,7 @@ Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
 INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27000, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[4, 4, 3]}, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=4243600}
 Feb 02, 2021 11:41:28 AM com.mongodb.diagnostics.logging.JULLogger log
 INFO: Opened connection [connectionId{localValue:2, serverValue:2}] to localhost:27000
-{ "_id" : { "$oid" : "60193a68517ac5004c914c07" }, "name" : "Kevin Sim", "class" : "Software Engineering Methods", "year" : "2021", "result" : { "CW" : 95, "EX" : 85 } }
+{ "_id" : { "$oid" : "60193a68517ac5004c914c07" }, "name" : "Kevin Sim", "class" : "DevOps", "year" : "2024", "result" : { "CW" : 95, "EX" : 85 } }
 
 Process finished with exit code 0
 
@@ -451,7 +451,7 @@ First we must update our `pom.xml` file.  Add the following below the `dependenc
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.napier.sem.App</mainClass>
+                            <mainClass>com.napier.devops.App</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -474,9 +474,9 @@ First we must update our `pom.xml` file.  Add the following below the `dependenc
 
 We have added two new sections:
 
-1. `properties` - here we are telling Maven to produce Java 10 code. Code compiled to Java 10 compliance will run on any version of Java from 10 upwards. The instructions for GitHub Actions later in this Lab use Java 11 as the execution environment so we must compile to a version of Java <= 11. 
+1. `properties` - here we are telling Maven to produce Java 8 code (1.8).
 2. `build` - there is quite a bit going on here.  You can happily reuse the code though:
-    - We are defining how Maven assembles the JAR file.
+    - We are defining how Maven asdevopsbles the JAR file.
     - We are telling Maven which class to run when the JAR is executed (`mainClass`).
     - We are telling Maven to build the `jar-with-dependencies` - in other words pull in the MongoDB code.
 
@@ -484,7 +484,7 @@ First rebuild your project so that everything is up to date: **Build** then **Bu
 
 ![IntelliJ with Maven Panel Open](img/intellij-maven-panel.png)
 
-Open the **Lifecycle** collapsed menu, and select **package** and click the **green triangle in the Maven panel** to start the package process.  This will take a few seconds as your code and the external JAR libraries are combined into a single JAR.  You will see this in the **target** folder in the **Project Structure** as `seMethods-0.1.0.1-jar-with-dependencies.jar`.  So we have successfully built our project into a single JAR for deployment.  Time to push to GitHub.
+Open the **Lifecycle** collapsed menu, and select **package** and click the **green triangle in the Maven panel** to start the package process.  This will take a few seconds as your code and the external JAR libraries are combined into a single JAR.  You will see this in the **target** folder in the **Project Structure** as `devopsethods-0.1.0.1-jar-with-dependencies.jar`.  So we have successfully built our project into a single JAR for deployment.  Time to push to GitHub.
 
 1. Add files to commit.
 2. Create commit.
@@ -523,9 +523,9 @@ We are now explicitly connecting to the server called `mongo-dbserver`, which is
 
 ```docker
 FROM openjdk:latest
-COPY ./target/seMethods-0.1.0.1-jar-with-dependencies.jar /tmp
+COPY ./target/devopsethods-0.1.0.1-jar-with-dependencies.jar /tmp
 WORKDIR /tmp
-ENTRYPOINT ["java", "-jar", "seMethods-0.1.0.1-jar-with-dependencies.jar"]
+ENTRYPOINT ["java", "-jar", "devopsethods-0.1.0.1-jar-with-dependencies.jar"]
 ```
 
 We have changed what we are copying to the JAR file that has been created.  We are also changing our entry point to execute this JAR.  We need to first update our jar file, rebuild the docker image and restart the container.
@@ -580,13 +580,11 @@ jobs:
       - name: Build
         run: docker build -t se_methods .
       - name: Run image
-        run: docker run --network se-methods --name semcontainer se_methods
+        run: docker run --network se-methods --name devopscontainer se_methods
       - name: view logs
-        run: docker logs semcontainer
+        run: docker logs devopscontainer
 
 ```
-
-Make sure your Maven configuration (pom.xml) is compiling to Java 10. (See above under the heading Creating a Self-contained JAR)
 
 We have a few more Docker commands but these are just the ones we added via IntelliJ or otherwise.  Now push this to GitHub:
 

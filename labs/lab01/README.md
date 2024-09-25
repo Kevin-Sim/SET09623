@@ -25,40 +25,28 @@ After this lab you will be able to:
 
 IntelliJ IDEA is the Integrated Development Environment that we will be using on the module. You can download IntelliJ IDEA from https://www.jetbrains.com/idea/ The community edition of IntelliJ IDEA is sufficient for this module but you can if you wish get access to the ultimate edition by signing up for a student licence at [https://www.jetbrains.com/shop/eform/students](https://www.jetbrains.com/shop/eform/students)
 
-You will require Java and IntelliJ installed on the machine you plan to work on.  Once ready, start-up IntelliJ.  You should be presented with the following screen:
+You will require Java and IntelliJ installed on the machine you plan to work on.  Once ready, start-up IntelliJ.  You should be presented with the following screen: Please note that this software changes regularly and if the screenshots look slightly different it's because I can't keep up. It should be similar and if you encounter any problems please let me know.
+
+
 
 ![IntelliJ Start Screen](img/intellij-start.png)
 
-We need to create a new project, so click on **Create New Project** to open the following window:
 
-![IntelliJ New Project](img/intellij-new-project.png)
 
-*Replicate the same settings as shown in the image.*  You need to do the following:
+*Replicate the same settings as shown in the image (you can change the location).*  You need to do the following:
 
-1. Select **10** (or newer) as Project SDK.  If IntelliJ has not detected the JDK you will need to find it.  For Windows see [here](https://stackoverflow.com/questions/16765726/how-to-set-intellij-idea-project-sdk).  If you are on Linux I assume you know what you are doing.  If you are on Mac OS X then the Windows help should be enough plus knowing where applications are installed.
-2. Select **Maven** as the project type on the left.
+1. Select at most 17 as the JDK for the project. The Open JDK Docker image which we will be using use version 17 and you will get errors if you choose a higher version. 
+2. Select **Maven** as the build system
 
-Once done click on **Next**.  This will open the following window:
 
-![IntelliJ New Maven Project](img/intellij-new-maven.png)
-
-Enter the following details:
-
-- **Name** seMethods
-- **Location** ~\IdeaProjects\seMethods
-- **GroupID** *com.napier.sem*
-- **ArtifactID** *seMethods*
-- **Version** 0.1.0.1
-
-The version stands for 0.1-alpha-1.  It means this is the first version.
-
-Leave **Project name** as *seMethods*.  You can store the project wherever you choose although the default location is normally best.
 
 Click **Finish** for your new project to be created.  This should open up the following window:
 
+Change the Java compliance to at most 11 (below shows Java 10 on lines 11 & 12)
+
 ![IntelliJ Main Window](img/intellij-main-window.png)
 
-If you do not have this window then ask try the instructions again and if you still have a problem ask for help.
+If you do not have this window then try the instructions again and if you still have a problem ask for help at the academic sessions. Please note that in the above screenshot version 11 should be the maximum for maven compiler source and target.
 
 ## Git with IntelliJ
 
@@ -154,7 +142,7 @@ Now we can create a new repository. In GitHub, you will see a **+** near the top
 
 ![GitHub New Repository](img/github-new-repo.png)
 
-This will open a new window.  You need to enter the name for the repository (`sem`), make sure the repository is **Public** and then select the **Apache 2.0** license type.  **Ensure that no README is added or `.gitignore`**.  You have one already.  This details are illustrated below:
+This will open a new window.  You need to enter the name for the repository (`devops`), make sure the repository is **Public** and then select the **Apache 2.0** license type.  **Ensure that no README is added or `.gitignore`**.  You have one already.  This details are illustrated below:
 
 ![GitHub Repository Details](img/github-repo-options.png)
 
@@ -162,7 +150,7 @@ Click on **Create repository** and you will be presented with the following:
 
 ![GitHub Repository Main Screen](img/github-repo-main.png)
 
-Now we need to tell IntelliJ the location of our repository.  This is the URL of the repository you created, which should be of the form `https://github.com/<user-name>/sem`.  For example, my repository is [https://github.com/Kevin-Sim/sem](https://github.com/Kevin-Sim/sem)
+Now we need to tell IntelliJ the location of our repository.  This is the URL of the repository you created, which should be of the form `https://github.com/<user-name>/devops`.  For example, my repository covering the basics of this lab is [https://github.com/Kevin-Sim/DevOpsLabs](https://github.com/Kevin-Sim/DevOpsLabs)
 
 To add the location to IntelliJ, select the  **Git** menu then and **Manage Remotes** to open the following window:
 
@@ -208,15 +196,15 @@ Click **Push** and refresh the GitHub page.  You should see your files there:
 
 We have done quite a bit so far, but we have yet to write any actual code.  The module focuses on software engineering and methods rather than programming, but it is worth testing things are working.  Let us build a simple *Hello World* example.
 
-In IntelliJ, **right-click** on the folder **seMethods->src->main->java** and select **New** then **Package** to open the **New Package** window:
+In IntelliJ, **right-click** on the folder **devopsethods->src->main->java** and select **New** then **Package** to open the **New Package** window:
 
 ![IntelliJ New Package](img/intellij-new-package.png)
 
-Call the package `com.napier.sem` and click **OK**.  Your **Project Structure** in IntelliJ should now look as follows:
+Call the package `com.napier.devops` and click **OK**.  Your **Project Structure** in IntelliJ should now look as follows:
 
 ![IntelliJ Project Package](img/intellij-project-package.png)
 
-Now **right-click** on **com.napier.sem** and select **New** and **Class** to open the **New Class** window:
+Now **right-click** on **com.napier.devops** and select **New** and **Class** to open the **New Class** window:
 
 ![IntelliJ New Class](img/intellij-new-class.png)
 
@@ -227,7 +215,7 @@ Call the class **App** and click **OK**.  IntelliJ will helpfully ask if you wan
 We will use the following code:
 
 ```java
-package com.napier.sem;
+package com.napier.devops;
 
 public class App
 {
@@ -561,7 +549,7 @@ IntelliJ should open the Docker panel at the bottom of the window:
 
 We are almost there.  It has been a long process to get to this stage, and it may seem we have not done any software development, which we haven't.  We have setup many processes which means our software development task will be easier.  Trust me!  The process might have been long in this first lab but we have made our lives substantially easier in the future.  Let us finish our process by deploying our application to a Docker image and running it.
 
-To finish our process we need to create a Dockerfile in IntelliJ.  **Right-click** on the project **seMethods** and select **New** then **File** to open the **New File** window:
+To finish our process we need to create a Dockerfile in IntelliJ.  **Right-click** on the project **devopsethods** and select **New** then **File** to open the **New File** window:
 
 ![IntelliJ New File](img/intellij-new-file.png)
 
@@ -571,14 +559,14 @@ Call the file **Dockerfile** and click **OK**.  Select **Yes** to add it to the 
 FROM openjdk:latest
 COPY ./target/classes/com /tmp/com
 WORKDIR /tmp
-ENTRYPOINT ["java", "com.napier.sem.App"]
+ENTRYPOINT ["java", "com.napier.devops.App"]
 ```
 
 We are using three new directives here:
 
 1. `COPY` will copy a file or folder from the source on the local machine to the destination in the Docker image.  Here we are copying the folder `com` from `target/classes` in the project to the folder `/tmp/com`.  The source is where IntelliJ has been building our classes.  The destination is the `/tmp` folder in the image.
 2. `WORKDIR` states where we want Docker to execute programs from in the container - the *working directory*.  This is `/tmp` - the same location we copied our classes to.
-3. `ENTRYPOINT` tells Docker what to execute when the container is created.  That is, run `java` with the class `com.napier.sem.App`.
+3. `ENTRYPOINT` tells Docker what to execute when the container is created.  That is, run `java` with the class `com.napier.devops.App`.
 
 OK, moment of truth.  On the side of the Dockerfile code you will see two green play buttons that look like run symbols.  This is the easiest way to test our Dockerfile.  
 

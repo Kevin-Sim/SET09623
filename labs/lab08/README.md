@@ -1,247 +1,22 @@
-# Lab 08: Integration Testing
+# Lab 08: Deployment
 
-In this lab we will build further automated tests for our project, focusing on integration testing. We will modify our App to allow local debugging to save time constantly building docker containers and add Integration testing to out GitHub Actions pipeline.
+In this lab we are going to complete two tasks:
 
-## Behavioural Objectives
+- Automate the release of our software to GitHub Releases using GitHub Actions.
 
-- [ ] **Modify** *our App to allow local connections to the database for faster debugging.*
-- [ ] **Create** *integration tests.*
-- [ ] **Use code coverage** from *version control.*
+- Generate our reports as markdown files and copy these back to a new branch on GitHub
 
-## Updating Project
+## Deploying to GitHub Releases
 
-We have some tidying up in our existing project to make our life easier.  We will modify the `pom.xml` file to use a more up-to-date versions of our mysql dependencies that allows local connections. 
+We have already seen how to generate a release on GitHub manually. GitHub actions can automate this process as part of our [Continuous Delivery](../../lectures/lecture16) workflow to produce a JAR file in our repository .
 
-### Updating Maven `pom.xml` File
+### Updating the GitHub Actions Script
 
-Update the dependencies section of your `pom.xml` to use version 8.0.18 of the mysql driver:
-
-```xml
-    <dependencies>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.18</version>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.1.0</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-```
-
-### Updating `App.java`
-
-We will also modify our `App.java` file to use the latest mysql connector and to allow the hostname and delay for the database to be set programmatically.  This will allow us to debug our code locally much more quickly than having to build docker containers each time a change is made.
-
-#### Updating `connect`
-
-Below is our updated `connect` method.  The updated lines are:
-
-- The method definition adds `location` and `delay` parameters.
-- `Class.forName` which uses the most up-to-date MySQL driver.
-- `Driver.getConnection` uses the `location`, and also updates the parameters to use `allowPublicKeyRetrieval=true` as we are using a more up-to-date version of MySQL.
-
-```java
-        public void connect(String location, int delay) {
-        try {
-            // Load Database driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.out.println("Could not load SQL driver");
-            System.exit(-1);
-        }
-
-        int retries = 10;
-        for (int i = 0; i < retries; ++i) {
-            System.out.println("Connecting to database...");
-            try {
-                // Wait a bit for db to start
-                Thread.sleep(delay);
-                // Connect to database              
-                con = DriverManager.getConnection("jdbc:mysql://" + location 
-                        + "/employees?allowPublicKeyRetrieval=true&useSSL=false", 
-                              "root", "example");
-                System.out.println("Successfully connected");
-                break;
-            } catch (SQLException sqle) {
-                System.out.println("Failed to connect to database attempt " +                                  Integer.toString(i));
-                System.out.println(sqle.getMessage());
-            } catch (InterruptedException ie) {
-                System.out.println("Thread interrupted? Should not happen.");
-            }
-        }
-    }
-```
-
-
-#### Updating `main`
-
-Modify the main method to use command line parameters, if supplied, or to default to localhost.
-
-```java
-      public static void main(String[] args) {
-        // Create new Application and connect to database
-        App a = new App();
-
-        if(args.length < 1){
-            a.connect("localhost:33060", 30000);
-        }else{
-            a.connect(args[0], Integer.parseInt(args[1]));
-        }
-
-        Department dept = a.getDepartment("Development");
-        ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
-
-
-        // Print salary report
-        a.printSalaries(employees);
-
-        // Disconnect from database
-        a.disconnect();
-    }
-```
-#### Updating `pom.xml` to Set JAR Filename
-
-At the start of the project we built a JAR file with the version number and `jar-with-dependencies` added to the name.  This has slowly become problematic with the number of files where our version number is provided.  Therefore, we will update the `pom.xml` file to produce a JAR file called `seMethods`.
-
-The section we have to update is in the `<build><plugins>` section for the `maven-assembly-plugin`.  The updated version is below:
-
-```xml
-<plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-assembly-plugin</artifactId>
-    <version>3.3.0</version>
-    <configuration>
-        <finalName>seMethods</finalName>
-        <archive>
-            <manifest>
-                <mainClass>com.napier.sem.App</mainClass>
-            </manifest>
-        </archive>
-        <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-        </descriptorRefs>
-        <appendAssemblyId>false</appendAssemblyId>
-    </configuration>
-    <executions>
-        <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-                <goal>single</goal>
-            </goals>
-        </execution>
-    </executions>
-</plugin>
-```
-
-We have set `<finalName>` and stated we do not want the ID attached (`<appendAssemblyId>` is set to `false`).  Our Maven build will now produce a file called `seMethods.jar`.
-
-#### Updating `Dockerfile` for Application
-
-Now we need to update the `Dockerfile` for the application to use the new JAR file name, and to provide the correct location for the database.  The updated `Dockerfile` is below.
-
-```dockerfile
-FROM openjdk:latest
-COPY ./target/seMethods.jar /tmp
-WORKDIR /tmp
-ENTRYPOINT ["java", "-jar", "seMethods.jar", "db:3306", "30000"]
-```
-
-
-
-## Enabling Local Debugging
-
-Make sure you have exposed the docker database port 
-
-Your `docker-compose.yml` file should be:
+We are going to modify our existing *build* stage in our GitHub Actions script so it pushes the built JAR file to GitHub Releases.  We could add this as a separate stage but as the build stage already creates a jar file we will append our deployment action at the end of the stage.
 
 ```yml
-version: '3'
-services:
-  # Application Dockerfile is in same folder which is .
-  app:
-    build: .
-
-  # db is is db folder
-  db:
-    build: db/.
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    ports:
-      - "33060:3306"
-
-```
-
-The last line tells docker to make port 3306 available on our local machine on port 33060
-
-Delete your old containers and images and restart the database from the docker compose file using the arrow at line 8 below.
-
-
-![Start Database](img/dbstart.png)
-
-You can leave the database running to save having to rebuild each time you want to connect. 
-
-When the database is running and ready for connections the log from the docker container should show `ready for connections`:
-
-![Database Ready](img/dbready.png)
-
-
-You should now be able to run the App locally without having to package and build docker images
-
-Just start the App directly  using the arrow next to the main method.
-
-![Start Locally](img/startlocal.png)
-
-The new version of App should work locally either running directly or by starting from docker-compose and on GitHub Actions without any modification.
-
-Test that all three scenarios are working
-
-- Locally as described above by running the App directly
-- Locally in docker using docker-compose to start the App (remember to delete target directory, old containers and images, repackage with maven, recreate and start App image using docker-compose )
-- Remotely on GitHub Actions
-
-We want to separate our tests into different files as we will have different types of tests.  Unit tests and integration tests are different, and we want to manage them as such.
-
-### Adding GitHub Actions Job Stages
-
-From the [Continuous Integration lecture](../../lectures/lecture15) we defined the following steps in a basic build script:
-
-1. Clean.
-2. Compile source code.
-3. Integrate database.
-4. Run tests.
-5. Run inspections.
-6. Deploy software.
-
-We will update our GitHub Actions workflow to separate the different stages
-
-```yml
-name: A workflow for my Hello World App
-on: push
-
-jobs:
-  UnitTests:
-    name: Unit Tests
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - name: Unit Tests
-        run: mvn -Dtest=com.napier.sem.AppTest test
-
-  build:
-    name: Build and Start Using docker-compose
+      build:
+    name: Build Run in Docker and Deploy Release
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -256,61 +31,28 @@ jobs:
       - name: Package and Run docker compose
         run: |
           mvn package -DskipTests
-          docker-compose up --abort-on-container-exit
+          docker compose up --abort-on-container-exit
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: "latest"
+          files: |
+            ./target/*.jar
 
 ```
 
-We have separated our tasks into different jobs. This allows us to define build stages for more control. It also allows the different jobs to run concurrently on GitHub Actions speeding up the process. **Commit** and **push** this change.  If successful then you should see the different stages on GitHub Actions as shown below.
+Let us consider the steps GitHub Actions will go through:
 
-![Workflow Stages](img/workflowstages.png)
+1. It will checkout the repo as normal and setup the GitHub Actions Java environment.
+2. It will package the code to a jar with dependencies called `devopsethods` skipping the maven test stage.
+3. The script uses the `"marvinpinto/action-automatic-releases@latest"` action to perform the following tasks:
+    - Set the repository using the global variable `${{ secrets.GITHUB_TOKEN }}` This is automatically created by GitHub Actions
+    - Set the release tag to `latest`
+    
+    - Copy any jar files from our target directory to GitHub Releases
 
-## Adding Integration Tests
-
-Remember that Unit Tests are check the integrity of the smallest parts of our program. These do not need a connection to the database.  We are now ready to write integration tests.  These are tests against our database, and therefore we need to be connected.  Our tests will be written in the same manner as unit tests, but require a bit more configuration.
-
-### Adding Integration Test File
-
-Add a new Java file to the test folder called `AppIntegrationTest.java`.  The code for the file is below.
-
-```java
-package com.napier.sem;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-public class AppIntegrationTest
-{
-    static App app;
-
-    @BeforeAll
-    static void init()
-    {
-        app = new App();
-        app.connect("localhost:33060", 30000);
-        
-    }
-
-    @Test
-    void testGetEmployee()
-    {
-        Employee emp = app.getEmployee(255530);
-        assertEquals(emp.emp_no, 255530);
-        assertEquals(emp.first_name, "Ronghao");
-        assertEquals(emp.last_name, "Garigliano");
-    }
-}
-```
-
-We are testing the `getEmployee` method to see if it returns a correct answer.  A random entry to the database has been used.  With this in place, we can update our GitHub Actions workflow.
-
-### Update GitHub Actions
-
-All we need to do now is update the GitHub Actions `main.yml` file to run our integration tests:
+For reference, the complete `main.yml` file is below:
 
 ```yml
 name: A workflow for my Hello World App
@@ -318,7 +60,6 @@ on:
   push:
     branches:
       - master
-      - lab08
 jobs:
   UnitTests:
     name: Unit Tests
@@ -334,119 +75,14 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Unit Tests
-        run: mvn -Dtest=com.napier.sem.AppTest test
-
-  IntegrationTests:
-    name: Integration Tests
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+        run: mvn -Dtest=com.napier.devops.AppTest test
+      - name: CodeCov
+        uses: codecov/codecov-action@v2
         with:
-          submodules: recursive
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - name: Integration Tests
-        run: |
-          docker build -t database ./db 
-          docker run --name employees -dp 33060:3306 database
-          mvn -Dtest=com.napier.sem.AppIntegrationTest test
-          docker stop employees
-          docker rm employees
-          docker image rm database                    
-
-  build:
-    name: Build and Start Using docker-compose
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - name: Package and Run docker compose
-        run: |
-          mvn package -DskipTests
-          docker-compose up --abort-on-container-exit
-
-```
-
-We have added an `integration tests` stage to invoke `mvn test` on the `AppIntegrationTest` file.  **Commit and push** your changes and check that everything still works on GitHub Actions
-
-## Exercise: Add Integration Tests
-
-Now your task is to write integration tests to ensure that your application works correctly in all cases.  You have the template in `AppIntegrationTest.java`.  Add similar tests that test all the pathways and conditions through your code.
-
-## Adding Code Coverage
-
-Last week we looked at using IntelliJ to provide a code coverage report.  This is good for working at a single workstation, but our aim is to make information global.  Therefore, we will use an online code coverage tool to generate reports.
-
-### Creating an Account with Codecov
-
-We are going to use a service called [Codecov](https://codecov.io/).  First, you need to go to their website and signup via your GitHub account.  The process from then should be fairly straightforward, but if you have any problems ask.
-
-### Updating `pom.xml` to Provide Code Coverage
-
-We need Maven to generate reports for us.  There are different plugins that can do this for us, and we will use the jacoco one.  Add the following to the `plugins` section of the `pom.xml` file:
-
-```xml
-<plugin>
-    <groupId>org.jacoco</groupId>
-    <artifactId>jacoco-maven-plugin</artifactId>
-    <version>0.8.2</version>
-    <executions>
-        <execution>
-            <goals>
-                <goal>prepare-agent</goal>
-            </goals>
-        </execution>
-        <execution>
-            <id>report</id>
-            <phase>test</phase>
-            <goals>
-                <goal>report</goal>
-            </goals>
-        </execution>
-    </executions>
-</plugin>
-```
-
-That is all we have to do in our Maven file.  Everything else is automated.
-
-### Updating `.main.yml` to Upload Code Coverage
-
-We will add another action to the Integration Test stage of our GitHub Actions `main.yml` file to upload the coverage reports created during the maven test stage to codecov. 
-
-```yml
-name: A workflow for my Hello World App
-on:
-  push:
-    branches:
-      - master
-      - lab08
-jobs:
-  UnitTests:
-    name: Unit Tests
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - name: Unit Tests
-        run: mvn -Dtest=com.napier.sem.AppTest test
+          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos 
+          directory: ./target/site/jacoco
+          flags: Unit Tests # optional
+          verbose: true # optional (default = false)
 
   IntegrationTests:
     name: Integration Tests
@@ -465,19 +101,19 @@ jobs:
         run: |
           docker build -t database ./db 
           docker run --name employees -dp 33060:3306 database
-          mvn -Dtest=com.napier.sem.AppIntegrationTest test          
+          mvn -Dtest=com.napier.devops.AppIntegrationTest test          
           docker stop employees
           docker rm employees
           docker image rm database                    
       - name: CodeCov
         uses: codecov/codecov-action@v2
         with:
-          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos 
+          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           directory: ./target/site/jacoco
           flags: Integration Tests # optional
           verbose: true # optional (default = false)
   build:
-    name: Build and Start Using docker-compose
+    name: Build Run in Docker and Deploy Release
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -492,88 +128,662 @@ jobs:
       - name: Package and Run docker compose
         run: |
           mvn package -DskipTests
-          docker-compose up --abort-on-container-exit
-
-```
-
-The jacoco maven plugin creates html reports in the `./target/site/jacoco` folder. The new action shown below uploads this folder to `https://codecov.io`
-
-```yml
-    - name: CodeCov
-        uses: codecov/codecov-action@v2
+          docker compose up --abort-on-container-exit
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos 
-          directory: ./target/site/jacoco
-          flags: Integration Tests # optional
-          verbose: true # optional (default = false)
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: "latest"
+          files: |
+            ./target/*.jar
+
 ```
 
+I have also added to the Maven `pom.xml` so that only the jar with dependencies is built during the Maven Package stage.
 
-Now **commit and push** these changes.  GitHub Actions should undertake the build process, and once one stage is complete you can view it at `https://codecov.io/gh/<github-username>/<repo>`.  For example, `https://codecov.io/gh/kevin-sim/sem_employees`.
+The complete Maven file is shown below for reference.
 
-![Code Coverage Report](img/codecov-overview.png)
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-### Adding Your Code Coverage Badge
+    <groupId>com.napier.devops</groupId>
+    <artifactId>devops_employees</artifactId>
+    <version>0.1.0.3</version>
 
-Under the *Settings* area of Codecov you will find the necessary markdown for your code coverage badge:
+    <properties>
+        <maven.compiler.source>10</maven.compiler.source>
+        <maven.compiler.target>10</maven.compiler.target>
+    </properties>
 
-![Code Coverage Badge Markdown](img/codecov-badge.png)
+    <dependencies>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.18</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.1.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-**Add the Markdown to your project `readme.md` for both the `master` and `develop` branches.**  This will allow you to see your code coverage status from your main GitHub project page.
-
-## Next Feature: Add New Employee
-
-We will now add a new feature to our application: adding a new employee.  We will adopt a Test-Driven Development approach by first writing the test.  First, add the empty method to `App.java`:
-
-```java
-public void addEmployee(Employee emp)
-{
-
-}
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <!-- skip building the default-jar-->
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <finalName>devopsethods</finalName>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.napier.devops.App</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <appendassemblyId>false</appendassemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <version>1.1.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>5.1.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
 ```
 
-And add the following code to your `AppIntergrationTest.java` file:
+Once happy with your changes merge them into master and push your changes to GitHub. Once GitHub Actions is complete if you look up your Releases you will see the new release there.  Note that `devopsethods.jar` has been added.
 
+![1](img/release.png)
+
+
+> Publishing the build jar file as a release on GitHub is one way to provide an automated release. Ideally we would deploy our code to a cloud environment such as Google Cloud or Microsoft Azure. This is something that was originally included on the module but has been removed due to potential financial costs to students. If you are interested there are plenty of GitHub Actions resources available to do this.  For example https://github.com/google-github-actions/deploy-cloud-functions
+>
+
+
+
+# Optional Extras
+
+The following sections of this lab are provided as additional resources that you can use to make interacting with the Application easier. For the coursework you only need to provide evidence that the reports have been generated, such as screenshots of the console (see [lab 12](../lab12/README.md)). The following sections provide more intuitive ways to display the reports to the end user.
+
+## Output the Reports to a GitHub Branch
+
+Currently we are outputting our reports to the console. In this section we are going to generate one of the reports to a markdown file within the docker container then get GitHub Actions to copy this report to a new branch in our repository. 
+
+The main method of the App is now:
 ```java
-@Test
-void testAddEmployee()
-{
-    Employee emp = new Employee();
-    emp.emp_no = 500000;
-    emp.first_name = "Kevin";
-    emp.last_name = "Chalmers";
-    app.addEmployee(emp);
-    emp = app.getEmployee(500000);
-    assertEquals(emp.emp_no, 500000);
-    assertEquals(emp.first_name, "Kevin");
-    assertEquals(emp.last_name, "Chalmers");
-}
+       // Create new Application and connect to database
+        App app = new App();
+
+        if (args.length < 1) {
+            app.connect("localhost:33060", 0);
+        } else {
+            app.connect(args[0], Integer.parseInt(args[1]));
+        }
+
+        ArrayList<Employee> employees = app.getSalariesByRole("Manager");
+        app.outputEmployees(employees, "ManagerSalaries.md");
+
+        // Disconnect from database
+        app.disconnect();
+```
+We use the following sql in the getSalariesByRole method replacing the 'Manager' with the role parameter passed to the method
+
+```sql
+SELECT employees.emp_no, employees.first_name, employees.last_name,
+titles.title, salaries.salary, departments.dept_name, dept_manager.emp_no
+FROM employees, salaries, titles, departments, dept_emp, dept_manager
+WHERE employees.emp_no = salaries.emp_no
+  AND salaries.to_date = '9999-01-01'
+  AND titles.emp_no = employees.emp_no
+  AND titles.to_date = '9999-01-01'
+  AND dept_emp.emp_no = employees.emp_no
+  AND dept_emp.to_date = '9999-01-01'
+  AND departments.dept_no = dept_emp.dept_no
+  AND dept_manager.dept_no = dept_emp.dept_no
+  AND dept_manager.to_date = '9999-01-01'
+  AND titles.title = 'Manager'
 ```
 
-Running this test (you should be able to do so straight from IntelliJ if your database is still running in the background) will fail.  This is because we haven't written the code yet.  Let us do that now.  Update `addEmployee` to the following:
+The method returns an `ArrayList<Employee>` which is output to file using the method `app.outputEmployees(employees, "ManagerSalaries.md"); which is listed below`
 
 ```java
-public void addEmployee(Employee emp)
-{
-    try
-    {
-        Statement stmt = con.createStatement();
-        String strUpdate =
-                "INSERT INTO employees (emp_no, first_name, last_name, birth_date, gender, hire_date) " +
-                "VALUES (" + emp.emp_no + ", '" + emp.first_name + "', '" + emp.last_name + "', " +
-                "'9999-01-01', 'M', '9999-01-01')";
-        stmt.execute(strUpdate);
+    /**
+     * Outputs to Markdown
+     *
+     * @param employees
+     */
+    public void outputEmployees(ArrayList<Employee> employees, String filename) {
+        // Check employees is not null
+        if (employees == null) {
+            System.out.println("No employees");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        // Print header
+        sb.append("| Emp No | First Name | Last Name | Title | Salary | Department |                    Manager |\r\n");
+        sb.append("| --- | --- | --- | --- | --- | --- | --- |\r\n");
+        // Loop over all employees in the list
+        for (Employee emp : employees) {
+            if (emp == null) continue;
+            sb.append("| " + emp.emp_no + " | " +
+                    emp.first_name + " | " + emp.last_name + " | " +
+                    emp.title + " | " + emp.salary + " | "
+                    + emp.dept_name + " | " + emp.manager + " |\r\n");
+        }
+        try {
+            new File("./reports/").mkdir();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new                                 File("./reports/" + filename)));            
+            writer.write(sb.toString());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-    catch (Exception e)
+```
+
+This will produce a directory called reports with a file called `ManagerSalaries.md` 
+
+To copy the report from inside the docker container on GitHub Actions we need to add an action to our GitHub Actions yml file
+
+Add the following to the end of your yml file within the build and deploy stage. Note you will need to change the name of your container on the second line. For a project named `devops_employees` that uses docker_compose to build a container called `app`, GitHub Actions will name the container `devops_employees_app_1`
+```yml
+      - name: Copy Output
+        run: docker container cp devops_employees_app_1:./tmp/reports ./
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          branch: reports # The branch the action should deploy to.
+          folder: reports # The folder we are copying
+```
+
+If successful then we should have a new branch in our repository called reports containing the markdown file which should look like the following.
+
+| Emp No | First Name | Last Name | Title | Salary | Department | Manager |
+| --- | --- | --- | --- | --- | --- | --- |
+| 110039 | Vishwani | Minakawa | Manager | 106491 | Marketing | 110039 |
+| 110114 | Isamu | Legleitner | Manager | 83457 | Finance | 110114 |
+| 110228 | Karsten | Sigstam | Manager | 65400 | Human Resources | 110228 |
+| 110420 | Oscar | Ghazalie | Manager | 56654 | Production | 110420 |
+| 110567 | Leon | DasSarma | Manager | 74510 | Development | 110567 |
+| 110854 | Dung | Pesch | Manager | 72876 | Quality Management | 110854 |
+| 111133 | Hauke | Zhang | Manager | 101987 | Sales | 111133 |
+| 111534 | Hilary | Kambil | Manager | 79393 | Research | 111534 |
+| 111939 | Yuchang | Weedman | Manager | 58745 | Customer Service | 111939 |
+
+
+## Converting to a Web App
+
+Another option is to convert our application to act as a Web Application. This will take a bit of time and patience and is not required for  the coursework. 
+
+To do this we will create a REST service.  REST is just a form of application where we access resources via a URL.  REST behaviour can be added to our Java application via the Java Spring Framework.  This just requires a few modifications to our Maven `pom.xml` file.
+
+### Adding Spring
+
+First, we need Maven to treat our project as a child of a standard Spring project.  **Add the following** after the existing `<groupID>` section:
+
+```xml
+# Existing code
+<groupId>com.napier.devops</groupId>
+<artifactId>devopsethods</artifactId>
+<version>0.1.0.8</version>
+
+# New code
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.0.5.RELEASE</version>
+</parent>
+```
+
+Now add the following to our `<dependencies>` section:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+We also need to change how Maven packages our application.  Change the `<artifactId>maven-assembly-plugin</artifactId>` section in the `<plugins>` section to:
+
+```xml
+<plugin>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-maven-plugin</artifactId>
+  <configuration>
+      <finalName>devopsethods</finalName>
+      <mainClass>com.napier.devops.App</mainClass>
+  </configuration>
+  <executions>
+      <execution>
+          <id>make-assembly</id>
+          <phase>package</phase>
+          <goals>
+              <goal>repackage</goal>
+          </goals>
+      </execution>
+  </executions>
+</plugin>
+```
+
+And that is Spring setup.  Now we will test the setup.
+
+### Testing RESTful Service
+
+**Create a new package called `hello`**.  We need three files - `Greeting.java`:
+
+```java
+package hello;
+
+public class Greeting
+{
+
+    private final long id;
+    private final String content;
+
+    public Greeting(long id, String content)
     {
-        System.out.println(e.getMessage());
-        System.out.println("Failed to add employee");
+        this.id = id;
+        this.content = content;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getContent() {
+        return content;
     }
 }
 ```
 
-And the test should pass.  **Commit and push** and check with GitHub Actions.
+`GreetingController.java`:
 
-## Cleanup
+```java
+package hello;
 
-As always, cleanup your system.  Stop any running containers, commit everything, and bring your branches up-to-date.
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class GreetingController
+{
+    private long counter = 0;
+    private static final String template = "Hello, %s!";
+
+    @RequestMapping("/greeting")
+    public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name)
+    {
+        return new Greeting(counter++, String.format(template, name));
+    }
+}
+```
+
+This file specifies how our REST application will listen for requests.  In the `greeting` part of the URL (e.g., http://www.napier.ac.uk/greeting) a Greeting message will be returned with the message *Hello, <something>*.  If a `name` parameter is passed via the URL (e.g., /greeting?name=Kevin) the *<something>* will be that name.  Otherwise, *World* will be used.
+
+Finally, `Application.java`:
+
+```java
+package hello;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application
+{
+    public static void main(String[] args)
+    {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+**Run the Application** and then go to the following URL: http://localhost:8080/greeting.  You will be returned the following JSON code:
+
+```json
+{"id":0,"content":"Hello, World!"}
+```
+
+Going to http://localhost:8080/greeting?name=Kevin will return the following:
+
+```json
+{"id":1,"content":"Hello, Kevin!"}
+```
+
+**Stop the application** otherwise it will continue running in the background servicing the requests.
+
+### Converting the HR System to a RESTful App
+
+Now that we have Spring setup we can convert our existing HR System to be restful.  This is quite an involved process, requiring you to update much across our existing code.
+
+It might be useful to start up a database container to connect to now.  This is so we can test our application.
+
+#### Updating `App`
+
+First, we need to modify the declaration of `App` to include the necessary imports and to state that the application is a Spring one.  Modify the start of `App.java` to the following:
+
+```java
+package com.napier.devops;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.sql.*;
+import java.util.ArrayList;
+
+@SpringBootApplication
+@RestController
+public class App
+```
+
+We also have to change the declarations managing our connection to be `static`:
+
+```java
+    /**
+     * Connection to MySQL database.
+     */
+    private static Connection con = null;
+
+    /**
+     * Connect to the MySQL database.
+     */
+    public static void connect(String location)
+    {
+        // Code as before.
+    }
+
+    /**
+     * Disconnect from the MySQL database.
+     */
+    public static void disconnect()
+    {
+        // Code as before.
+    }
+```
+
+These need to be `static` as we will no longer create an `App` object.  Next we update `main` to initialise the Spring application:
+
+```java
+    public static void main(String[] args)
+    {
+        // Connect to database
+        if (args.length < 1)
+        {
+            connect("localhost:33060");
+        }
+        else
+        {
+            connect(args[0]);
+        }
+
+        SpringApplication.run(App.class, args);
+    }
+```
+
+Notice we no longer call any methods.  This will be done via the URLs.
+
+#### Updating Methods
+
+Each method has to be updated to support a URL entry point.  For example, `getEmployee` we will convert to this:
+
+```java
+    /**
+     * Get a single employee record.
+     * @param ID emp_no of the employee record to get.
+     * @return The record of the employee with emp_no or null if no employee exists.
+     */
+    @RequestMapping("employee")
+    public Employee getEmployee(@RequestParam(value = "id") String ID)
+```
+
+We set the URL to `/employee`.  We set the name of the parameter to `id`.  We also change the type of the parameter to `String` as a URL only provides string data.  **You will need to modify any integration test that calls `getEmployee` to use a String also**.  You should be able to run the App and go to the following URL: http://localhost:8080/employee?id=10002.  This will return the following:
+
+```json
+{"emp_no":10002,"first_name":"Bezalel","last_name":"Simmel","title":null,"salary":0,"dept":null,"manager":null}
+```
+
+##### Exercise
+
+Your task is to update all the methods to support REST interaction.  For information, you will need:
+
+- `getAllSalaries` mapped to `salaries`.
+- `getSalariesByTitle` mapped to `salaries_title` with `title` parameter.
+- `getDepartment` mapped to `department` with `dept` parameter.
+- `getSalariesByDepartment` mapped to `salaries_department` with `dept` parameter.
+
+**Remember all parameters have to be `String`.** You will have to decide how to manage this.  My advice is to test each one as you implement them.
+
+## Putting in a Web Front-end
+
+Exposing our application to the entire Internet is not a good idea.  A better strategy is to put a web server in front of our application which will redirect calls.  We will do this via an Nginx web server (this was our first Docker container remember).  We will do this in two steps:
+
+1. Simply forwarding on requests to our application.
+2. Using some JavaScript to generate a table from our generated JSON.
+
+### Nginx Web Server Set-up
+
+First, **create a new folder/directory in your IntelliJ project called `web`**.  Then add the following `Dockerfile` to the `web` folder:
+
+```dockerfile
+FROM nginx
+COPY content /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+```
+
+Now **add a new file to the folder called `nginx.conf`**:
+
+```conf
+events {
+}
+
+http {
+    root /usr/share/nginx/html;
+    server {
+        listen 80;
+        location /app/ {
+            proxy_pass http://app:8080/;
+        }
+    }
+}
+```
+
+This configuration tells Nginx the following:
+
+- Our main website files will be in the folder `/usr/share/nginx/html`.  Note this is the same folder we will copy to in the Dockerfile.
+- Nginx will listen on port 80 (the standard HTTP port).
+- Any request coming into `/app/` (e.g., http://www.napier.ac.uk/app) will be forwarded to the address `http://app:8080`.  
+
+Now add a new directory called `content` to the `web` directory, and add the following `index.html` file to it:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <title>Title</title>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+</head>
+<body>
+<div class="mypanel"></div>
+</body>
+
+<script>
+    $.getJSON('http://time.jsontest.com', function(data) {
+
+        var text = `Date: ${data.date}<br>
+                    Time: ${data.time}<br>
+                    Unix time: ${data.milliseconds_since_epoch}`
+
+
+        $(".mypanel").html(text);
+    });
+</script>
+
+</html>
+```
+
+Don't worry about the HTML.  We will add to it later, but you don't need to understand it.
+
+### Some *Magic* JavaScript
+
+The code here only works for arrays of JSON data (e.g., methods that return an `ArrayList`).  It will not work on a single element like an `Employee`.  You will have to write different code for that.
+
+Now it is time for the last piece of the puzzle - turning the raw JSON data into a table.  To do this, create a new file `salaries_title.html` in the `content` folder for our web image.  The file contents are below:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Salaries by Title</title>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+    <style>
+        th, td, p, input
+        {
+            font:14px Verdana;
+        }
+        table, th, td
+        {
+            border: solid 1px #DDD;
+            border-collapse: collapse;
+            padding: 2px 3px;
+            text-align: center;
+        }
+        th
+        {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="showData">Waiting</div>
+</body>
+<script>
+    var urlParams = new URLSearchParams(window.location.search);
+    var title = urlParams.get('title');
+
+    var URL = "http://" + window.location.hostname + "/app/salaries_title?title=" + title;
+
+    $.getJSON(URL, function(data) {
+        // EXTRACT VALUE FOR HTML HEADER.
+        var col = [];
+        for (var i = 0; i < data.length; i++) {
+            for (var key in data[i]) {
+                if (col.indexOf(key) === -1) {
+                    col.push(key);
+                }
+            }
+        }
+
+        // CREATE DYNAMIC TABLE.
+        var table = document.createElement("table");
+
+        // CREATE HTML TABLE HEADER ROW USING THE EXTRACTED HEADERS ABOVE.
+        var tr = table.insertRow(-1);                   // TABLE ROW.
+        for (var i = 0; i < col.length; i++) {
+            var th = document.createElement("th");      // TABLE HEADER.
+            th.innerHTML = col[i];
+            tr.appendChild(th);
+        }
+
+        // ADD JSON DATA TO THE TABLE AS ROWS.
+        for (var i = 0; i < data.length; i++) {
+            tr = table.insertRow(-1);
+            for (var j = 0; j < col.length; j++) {
+                var tabCell = tr.insertCell(-1);
+                tabCell.innerHTML = data[i][col[j]];
+            }
+        }
+
+        // FINALLY ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
+        $(".showData").html(table);
+    });
+</script>
+</html>
+```
+
+The key part is the `<script>` tag at the bottom:
+
+- `var urlParams = new URLSearchParams(window.location.search);` gets any parameters (parts after the question mark) in the URL.  For example, `www.napier.ac.uk/salaries_title.html?title=Engineer&name=Kevin` would provide the `title=Engineer&name=Kevin` part.
+- `var title = urlParams.get('title');` gets the `title` parameter from the URL.  In the example above, this is `Engineer`.
+- `var URL = "http://" + window.location.hostname + "/app/salaries_title?title=" + title;` builds a URL from the current location `window.location.hostname`.  It then adds `/app/salaries_title?title=<title>` to the URL.  Because we are going to the `/app` we will get the JSON data.
+- `$.getJSON(URL, ...` gets the JSON data from the URL we specified.  The rest of the code is the function called on completion of this call, which just builds a table.
+
+**Run The Application.**  You should be able to access the following URL: `http://localhost/salaries_title.html?title=Engineer`.  It will produce a web page as follows:
+
+![Web Table Output](img/web-table-output.PNG)
+
+

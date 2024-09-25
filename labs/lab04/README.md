@@ -1,6 +1,6 @@
 # Lab 04: Task Management and Kanban
 
-Our next step is to extend our task management system beyond simple GitHub issues.  We will use a task board approach that comes from [Kanban](https://en.wikipedia.org/wiki/Kanban_(development)).  [Lecture 8](../../lectures/lecture08) goes into more detail about Kanban.
+Our next step is to extend our task management system beyond simple GitHub issues.  We will use a task board approach that comes from [Kanban](https://en.wikipedia.org/wiki/Kanban_(development)).  [Unit 4b](../../units/unit04/unit04b.md) goes into more detail about Kanban.
 
 ## Behavioural Objectives
 
@@ -50,7 +50,7 @@ We are now going to go through two processes:
 
 ### Assigning Story Points
 
-In the notes for [Lecture 2](../../lectures/lecture02) we looked at how we assign points to tasks.  It is all about estimating the size of a task against other tasks.  Zube lets us assign story points to tasks.  To do so, **Click** on a **task card** on the Kanban board.  This will open the task details window:
+In the notes for [Unit 01b](../../units/unit01/unit01b.md) we looked at how we assign points to tasks.  It is all about estimating the size of a task against other tasks.  Zube lets us assign story points to tasks.  To do so, **Click** on a **task card** on the Kanban board.  This will open the task details window:
 
 ![Zube Task Details](img/zube-points.png)
 
@@ -76,7 +76,7 @@ This is the current order tasks will be completed for the project, but it is sub
 
 ## Setting up a Sprint Board
 
-Now it is time to set up a *Sprint*.  Remember from [Lecture 02](../../lectures/lecture02) that a Sprint is a fixed-time where we attempt to do work.  A Sprint can have different durations, but for the labs we are going to work in a single week (as that is the amount of time to do a lab).  We define the work we are going to do and then we work on it - **not adding any new work to the sprint.**
+Now it is time to set up a *Sprint*.  Remember from [Unit 01b](../../units/unit01/unit01b.md) that a Sprint is a fixed-time where we attempt to do work.  A Sprint can have different durations, but for the labs we are going to work in a single week (as that is the amount of time to do a lab).  We define the work we are going to do and then we work on it - **not adding any new work to the sprint.**
 
 Zube features **Sprint Boards**.  To use these, first we need to set-up a Sprint.  To do this, click on the **Sprints** menu option on the left.  This will open up the following view:
 
@@ -90,7 +90,7 @@ Enter the details as shown in the image above:
 
 - Title: Lab 04
 - Description: Work on Lab 04 for SE Methods.
-- Dates: As appropriate for the week you are doing this.  In 2019, that was Feb 04 (Monday) until Feb 10 (Sunday).
+- Dates: As appropriate for the week you are doing this.  
 
 **Click Save** and the Sprint will be created.  Now click on **Sprint Board** on the left-hand menu to open the Sprint Board view:
 
@@ -110,7 +110,7 @@ Next we need to setup our Sprint Board.  The task we are going to work on (1. As
 
 ### Adding New Tasks
 
-As in [Lab 03](../lab03) our user story has a few tasks:
+As in [Lab 03](../lab03b) our user story has a few tasks:
 
 1. Get all current salaries from the database.
 2. Print list of salaries.
@@ -250,7 +250,7 @@ public static void main(String[] args)
 
 And now we are ready to test.  Remember what we have to do:
 
-1. Ensure **all** previous versions of `sem_app` are deleted - containers and images.
+1. Ensure **all** previous versions of `devops_app` are deleted - containers and images.
 2. **Compile** the project via Maven.
 3. **Package** the project via Maven.
 4. **Run** the `docker-compose` file.
@@ -358,7 +358,7 @@ We have expanded our process at the start and the end to incorporate our Sprint 
 8. Work on task.
 9. Repeat 7-8 until feature is complete.
 10. Once feature is finished, create JAR file.
-11. Update and test Docker configuration with GitHub Actions.
+11. Update and test Docker configuration with Travis.
 12. Update feature branch with `develop` to ensure feature is up-to-date.
 13. Check feature branch still works.
 14. Merge feature branch into `develop`.
