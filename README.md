@@ -1,4 +1,5 @@
 # SETSET09623 DevOps
+This is an old version of a course that no loger runs and isn't updated
 
 | Week | Lectures | Lab | Assessment |
 |------|----------|-----|------------|
